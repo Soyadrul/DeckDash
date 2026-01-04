@@ -126,12 +126,15 @@ class _CardSelectorDropdownState extends State<CardSelectorDropdown> {
                     ],
                   ),
                 ),
+
                 const Divider(height: 1),
+
+                const SizedBox(height: 16),
 
                 // Grid of all 52 cards
                 Expanded(
                   child: GridView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     // Grid with 4 columns
                     gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 4,
@@ -184,6 +187,7 @@ class _CardSelectorDropdownState extends State<CardSelectorDropdown> {
                     },
                   ),
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
