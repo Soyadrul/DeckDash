@@ -20,7 +20,7 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
 
   // Controller for the text input field
   // Allows us to read and manipulate the text field's content
-  final TextEditingController _cardCountController = TextEditingController(text: '52');
+  final TextEditingController _cardCountController = TextEditingController(text: '12');
 
   // Error message to display if input is invalid (null means no error)
   String? _errorMessage;
@@ -53,10 +53,10 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
       return false;
     }
 
-    // Check if number is outside valid range (1-52)
-    if (number < 1 || number > 52) {
+    // Check if number is outside valid range (1-51)
+    if (number < 1 || number > 51) {
       setState(() {
-        _errorMessage = 'Number must be between 1 and 52';
+        _errorMessage = 'Number must be between 1 and 51';
       });
       return false;
     }
@@ -136,7 +136,7 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
               Card(
                 child: RadioListTile<bool>(
                   title: const Text('Custom number'),
-                  subtitle: const Text('Choose how many cards to use (1-52)'),
+                  subtitle: const Text('Choose how many cards to use (1-51)'),
                   value: false,
                   groupValue: _useFullDeck,
                   onChanged: (value) {
@@ -158,7 +158,7 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
                   controller: _cardCountController,
                   decoration: InputDecoration(
                     labelText: 'Number of cards',
-                    helperText: 'Enter a number between 1 and 52',
+                    helperText: 'Enter a number between 1 and 51',
                     errorText: _errorMessage,  // Shows error if not null
                     border: const OutlineInputBorder(),
                     prefixIcon: const Icon(Icons.numbers),
