@@ -50,15 +50,15 @@ class _RecallScreenState extends State<RecallScreen> {
     return !_selectedCards.contains(null);
   }
 
-  // Counts how many cards the user got correct
-  int _countCorrectCards() {
-    int correct = 0;
+  // Counts how many cards the user selected
+  int _countSelectedCards() {
+    int selected = 0;
     for (int i = 0; i < _selectedCards.length; i++) {
-      if (_selectedCards[i] == widget.correctCards[i]) {
-        correct++;
+      if (_selectedCards[i] != null) {
+        selected++;
       }
     }
-    return correct;
+    return selected;
   }
 
   // Shows confirmation dialog before finishing recall
@@ -117,18 +117,18 @@ class _RecallScreenState extends State<RecallScreen> {
         .size
         .width;
     final cardsPerRow = _getCardsPerRow(screenWidth);
-    final correctCount = _countCorrectCards();
+    final selectedCount = _countSelectedCards();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Recall Phase'),
         actions: [
-          // Shows score in the app bar (correct/total)
+          // Shows the number of selected cards in the app bar (selected/total)
           Center(
             child: Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: Text(
-                '$correctCount/${widget.correctCards.length}',
+                '$selectedCount/${widget.correctCards.length}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
