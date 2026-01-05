@@ -85,99 +85,108 @@ class ResultsScreen extends StatelessWidget {
       ),
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
-        child: Column(
-          children: [
-            // Score panel at the top
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: scoreColor.withValues(alpha: 0.1),  // Light background
-                border: Border(
-                  bottom: BorderSide(
-                    color: scoreColor.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-              ),
-              child: Column(
-                children: [
-                  // Main score: "45 / 52"
-                  Text(
-                    '$score / ${correctCards.length}',
-                    style: TextStyle(
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: scoreColor,
+        // CRITICAL FIX: Wrap entire body in SingleChildScrollView
+        // This makes the whole screen scrollable when content is too tall
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // UPDATED: Made score panel more compact to reduce overall height
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                decoration: BoxDecoration(
+                  color: scoreColor.withValues(alpha: 0.1),  // Light background
+                  border: Border(
+                    bottom: BorderSide(
+                      color: scoreColor.withValues(alpha: 0.3),
+                      width: 2,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  // Percentage: "86.5% correct"
-                  Text(
-                    '${percentage.toStringAsFixed(1)}% correct',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: scoreColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Scrollable grid showing all results
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: (correctCards.length / cardsPerRow).ceil(),
-                itemBuilder: (context, rowIndex) {
-                  return _buildResultRow(context, rowIndex, cardsPerRow, screenWidth);
-                },
-              ),
-            ),
-
-            // Bottom button to return home
-            // Wrapped to handle potential keyboard (future-proof)
-            SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 16.0,
-                  right: 16.0,
-                  top: 16.0,
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // Pop all screens until we reach the home screen
-                          Navigator.of(context).popUntil((route) => route.isFirst);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Return to Home',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                    // Main score: "45 / 52"
+                    // UPDATED: Reduced font size from 48 to 36 for more compact display
+                    Text(
+                      '$score / ${correctCards.length}',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: scoreColor,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Percentage: "86.5% correct"
+                    // UPDATED: Reduced font size from 20 to 16
+                    Text(
+                      '${percentage.toStringAsFixed(1)}% correct',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: scoreColor,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+
+              // UPDATED: Card comparison grid - no longer wrapped in Expanded
+              // Instead, we calculate the exact height needed
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: _buildAllResultRows(context, screenWidth, cardsPerRow),
+                ),
+              ),
+
+              // Bottom button to return home
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  top: 0.0,
+                  bottom: 16.0,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      // Pop all screens until we reach the home screen
+                      Navigator.of(context).popUntil((route) => route.isFirst);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Return to Home',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // NEW METHOD: Builds all result rows at once instead of using ListView.builder
+  // This allows the SingleChildScrollView to handle all scrolling
+  List<Widget> _buildAllResultRows(BuildContext context, double screenWidth, int cardsPerRow) {
+    // Calculate total number of rows needed
+    final totalRows = (correctCards.length / cardsPerRow).ceil();
+    
+    // Build a list of all row widgets
+    return List.generate(totalRows, (rowIndex) {
+      return _buildResultRow(context, rowIndex, cardsPerRow, screenWidth);
+    });
+  }
+
   // Builds one row of results showing both user's choice and correct answer
-  // Now accepts screenWidth to calculate fixed card width
   Widget _buildResultRow(BuildContext context, int rowIndex, int cardsPerRow, double screenWidth) {
     final startIndex = rowIndex * cardsPerRow;
     final endIndex = (startIndex + cardsPerRow).clamp(0, correctCards.length);
@@ -223,8 +232,7 @@ class ResultsScreen extends StatelessWidget {
           const SizedBox(height: 8),
 
           // Row 2: Correct cards
-          // Changed from spaceEvenly to start alignment
-          // This prevents the last row from stretching cards to fill space
+          // Same changes as Row 1
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: List.generate(

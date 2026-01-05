@@ -157,48 +157,44 @@ class _RecallScreenState extends State<RecallScreen> {
       ),
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
-        child: Column(
-          children: [
-            // Instructions banner at the top
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-              ),
-              child: Text(
-                'Select the cards in the order you saw them',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-
-            // Scrollable grid of card selectors
-            Expanded(
-              child: ListView.builder(
+        // CRITICAL FIX: Wrap the entire body in SingleChildScrollView
+        // This makes the whole screen scrollable when content is too tall
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Instructions banner at the top
+              Container(
+                width: double.infinity,
                 padding: const EdgeInsets.all(16),
-                // Calculate number of rows needed
-                itemCount: (widget.correctCards.length / cardsPerRow).ceil(),
-                itemBuilder: (context, rowIndex) {
-                  return _buildCardRow(rowIndex, cardsPerRow, screenWidth);
-                },
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                ),
+                child: Text(
+                  'Select the cards in the order you saw them',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-            ),
 
-            // Finish button at the bottom
-            // Wrapped in SingleChildScrollView to handle keyboard
-            SingleChildScrollView(
-              reverse: true, // Keeps button visible when keyboard appears
-              child: Padding(
-                padding: EdgeInsets.only(
+              // UPDATED: Card selectors grid - no longer wrapped in Expanded
+              // Instead, we calculate the exact height needed
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: _buildAllCardRows(screenWidth, cardsPerRow),
+                ),
+              ),
+
+              // Finish button at the bottom
+              Padding(
+                padding: const EdgeInsets.only(
                   left: 16.0,
                   right: 16.0,
-                  top: 16.0,
-                  // Add padding for keyboard
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
+                  top: 0.0,
+                  bottom: 16.0,
                 ),
                 child: SizedBox(
                   width: double.infinity,
@@ -219,15 +215,26 @@ class _RecallScreenState extends State<RecallScreen> {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // NEW METHOD: Builds all card rows at once instead of using ListView.builder
+  // This allows the SingleChildScrollView to handle all scrolling
+  List<Widget> _buildAllCardRows(double screenWidth, int cardsPerRow) {
+    // Calculate total number of rows needed
+    final totalRows = (widget.correctCards.length / cardsPerRow).ceil();
+    
+    // Build a list of all row widgets
+    return List.generate(totalRows, (rowIndex) {
+      return _buildCardRow(rowIndex, cardsPerRow, screenWidth);
+    });
+  }
+
   // Builds a single row of card selectors
-  // Now accepts screenWidth to calculate fixed card width
   Widget _buildCardRow(int rowIndex, int cardsPerRow, double screenWidth) {
     // Calculate which cards belong in this row
     final startIndex = rowIndex * cardsPerRow;
