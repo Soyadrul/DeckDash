@@ -44,28 +44,25 @@ class ResultsScreen extends StatelessWidget {
 
   // Calculates cards per row based on screen width
   int _getCardsPerRow(double screenWidth) {
-    if (screenWidth > 800) return 4;
-    if (screenWidth > 500) return 3;
-    return 2;
+    // Adjusted breakpoints to be more conservative
+    // This prevents trying to fit too many cards on smaller screens
+    if (screenWidth >= 900) return 4;   // Very wide screens: 4 cards per row
+    if (screenWidth >= 600) return 3;   // Medium/tablet screens: 3 cards per row
+    return 2;                           // Phone screens: 2 cards per row
   }
 
   // Calculates the width each card should have
   // This ensures all cards have the same width, even in incomplete rows
-  double _getCardWidth(double screenWidth, int cardsPerRow) {
-    // Total horizontal padding (16px on each side)
-    const totalHorizontalPadding = 32.0;
-    
-    // Horizontal padding between cards (4px on each side = 8px total per card)
-    const cardHorizontalPadding = 8.0;
-    
-    // Calculate available width for cards
-    final availableWidth = screenWidth - totalHorizontalPadding;
+  double _getCardWidth(double availableWidth, int cardsPerRow) {
+    // CRITICAL: This method now receives the ACTUAL available width
+    // from LayoutBuilder, which accounts for SafeArea and all padding
     
     // Calculate total spacing between cards in a row
-    final totalSpacing = cardHorizontalPadding * (cardsPerRow - 1);
+    // For N cards, there are (N-1) gaps of 8px each
+    final totalSpacing = 8.0 * (cardsPerRow - 1);
     
     // Calculate width per card
-    // Each card gets equal width, with spacing accounted for
+    // Divide remaining space equally among all cards
     return (availableWidth - totalSpacing) / cardsPerRow;
   }
 
@@ -74,8 +71,6 @@ class ResultsScreen extends StatelessWidget {
     final score = _calculateScore();
     final percentage = _calculatePercentage();
     final scoreColor = _getScoreColor(context, percentage);
-    final screenWidth = MediaQuery.of(context).size.width;
-    final cardsPerRow = _getCardsPerRow(screenWidth);
 
     return Scaffold(
       appBar: AppBar(
@@ -85,122 +80,126 @@ class ResultsScreen extends StatelessWidget {
       ),
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
-        // CRITICAL FIX: Wrap entire body in SingleChildScrollView
-        // This makes the whole screen scrollable when content is too tall
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // UPDATED: Made score panel more compact to reduce overall height
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-                decoration: BoxDecoration(
-                  color: scoreColor.withValues(alpha: 0.1),  // Light background
-                  border: Border(
-                    bottom: BorderSide(
-                      color: scoreColor.withValues(alpha: 0.3),
-                      width: 2,
+        // CRITICAL FIX: Use LayoutBuilder to get the ACTUAL available width
+        // This accounts for SafeArea padding, system UI, and all constraints
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // constraints.maxWidth is the TRUE available width after SafeArea
+            final availableWidth = constraints.maxWidth;
+            final cardsPerRow = _getCardsPerRow(availableWidth);
+            
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Score panel at the top (made more compact)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+                    decoration: BoxDecoration(
+                      color: scoreColor.withValues(alpha: 0.1),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: scoreColor.withValues(alpha: 0.3),
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // Main score: "45 / 52"
+                        Text(
+                          '$score / ${correctCards.length}',
+                          style: TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            color: scoreColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        // Percentage: "86.5% correct"
+                        Text(
+                          '${percentage.toStringAsFixed(1)}% correct',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: scoreColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    // Main score: "45 / 52"
-                    // UPDATED: Reduced font size from 48 to 36 for more compact display
-                    Text(
-                      '$score / ${correctCards.length}',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: scoreColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    // Percentage: "86.5% correct"
-                    // UPDATED: Reduced font size from 20 to 16
-                    Text(
-                      '${percentage.toStringAsFixed(1)}% correct',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: scoreColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
-              // UPDATED: Card comparison grid - no longer wrapped in Expanded
-              // Instead, we calculate the exact height needed
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: _buildAllResultRows(context, screenWidth, cardsPerRow),
-                ),
-              ),
-
-              // Bottom button to return home
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 16.0,
-                  right: 16.0,
-                  top: 0.0,
-                  bottom: 16.0,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () {
-                      // Pop all screens until we reach the home screen
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      'Return to Home',
-                      style: TextStyle(fontSize: 16),
+                  // Card comparison grid
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: _buildAllResultRows(context, availableWidth, cardsPerRow),
                     ),
                   ),
-                ),
+
+                  // Bottom button to return home
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16.0,
+                      right: 16.0,
+                      top: 0.0,
+                      bottom: 16.0,
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () {
+                          // Pop all screens until we reach the home screen
+                          Navigator.of(context).popUntil((route) => route.isFirst);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Return to Home',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  // NEW METHOD: Builds all result rows at once instead of using ListView.builder
+  // Builds all result rows at once instead of using ListView.builder
   // This allows the SingleChildScrollView to handle all scrolling
-  List<Widget> _buildAllResultRows(BuildContext context, double screenWidth, int cardsPerRow) {
+  List<Widget> _buildAllResultRows(BuildContext context, double availableWidth, int cardsPerRow) {
     // Calculate total number of rows needed
     final totalRows = (correctCards.length / cardsPerRow).ceil();
     
     // Build a list of all row widgets
     return List.generate(totalRows, (rowIndex) {
-      return _buildResultRow(context, rowIndex, cardsPerRow, screenWidth);
+      return _buildResultRow(context, rowIndex, cardsPerRow, availableWidth);
     });
   }
 
   // Builds one row of results showing both user's choice and correct answer
-  Widget _buildResultRow(BuildContext context, int rowIndex, int cardsPerRow, double screenWidth) {
+  Widget _buildResultRow(BuildContext context, int rowIndex, int cardsPerRow, double availableWidth) {
     final startIndex = rowIndex * cardsPerRow;
     final endIndex = (startIndex + cardsPerRow).clamp(0, correctCards.length);
     
     // Calculate the fixed width each card should have
-    final cardWidth = _getCardWidth(screenWidth, cardsPerRow);
+    // IMPORTANT: Subtract the padding (16px * 2 = 32px) from available width
+    final cardWidth = _getCardWidth(availableWidth - 32, cardsPerRow);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
       child: Column(
         children: [
           // Row 1: User's selected cards
-          // Changed from spaceEvenly to start alignment
-          // This prevents the last row from stretching cards to fill space
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: List.generate(
@@ -211,11 +210,8 @@ class ResultsScreen extends StatelessWidget {
                 final correctCard = correctCards[cardIndex];
                 final isCorrect = selectedCard == correctCard;
 
-                // Replaced Expanded with fixed-width Container
-                // This ensures all cards have the same width
                 return Container(
                   width: cardWidth,
-                  // Add spacing between cards, but not after the last card
                   margin: EdgeInsets.only(
                     right: i < (endIndex - startIndex - 1) ? 8.0 : 0,
                   ),
@@ -232,7 +228,6 @@ class ResultsScreen extends StatelessWidget {
           const SizedBox(height: 8),
 
           // Row 2: Correct cards
-          // Same changes as Row 1
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: List.generate(
@@ -241,16 +236,14 @@ class ResultsScreen extends StatelessWidget {
                 final cardIndex = startIndex + i;
                 final correctCard = correctCards[cardIndex];
 
-                // Replaced Expanded with fixed-width Container
                 return Container(
                   width: cardWidth,
-                  // Add spacing between cards, but not after the last card
                   margin: EdgeInsets.only(
                     right: i < (endIndex - startIndex - 1) ? 8.0 : 0,
                   ),
                   child: _buildCardResult(
                     correctCard,
-                    true,  // Always true for the correct answer row
+                    true,
                     'Correct card',
                     isCorrectAnswer: true,
                   ),
@@ -265,11 +258,11 @@ class ResultsScreen extends StatelessWidget {
 
   // Builds a single card result display
   Widget _buildCardResult(
-      PlayingCard? card,  // The card to display (null if not selected)
-      bool isCorrect,  // Whether this card is correct in this position
-      String label,  // Label to show below the card
+      PlayingCard? card,
+      bool isCorrect,
+      String label,
           {
-        bool isCorrectAnswer = false,  // Whether this is the "correct answer" row
+        bool isCorrectAnswer = false,
       }) {
     Color backgroundColor;
 
@@ -289,7 +282,6 @@ class ResultsScreen extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          // Thinner border for correct answer row
           color: isCorrect ? Colors.green : Colors.red,
           width: isCorrectAnswer ? 1 : 2,
         ),
@@ -299,13 +291,11 @@ class ResultsScreen extends StatelessWidget {
         children: [
           if (card != null) ...[
             // Display the card
-            // TODO: Replace with SVG when assets are available
             Text(
               card.displayName,
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                // Hearts and diamonds are red, clubs and spades are black
                 color: (card.suit == '♥' || card.suit == '♦')
                     ? Colors.red
                     : Colors.black,

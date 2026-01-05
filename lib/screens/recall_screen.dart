@@ -33,28 +33,25 @@ class _RecallScreenState extends State<RecallScreen> {
   // Calculates how many cards to show per row based on screen width
   // Larger screens show more cards per row
   int _getCardsPerRow(double screenWidth) {
-    if (screenWidth > 800) return 4;  // Wide screens: 4 cards per row
-    if (screenWidth > 500) return 3;  // Medium screens: 3 cards per row
-    return 2;  // Small screens: 2 cards per row
+    // Adjusted breakpoints to be more conservative
+    // This prevents trying to fit too many cards on smaller screens
+    if (screenWidth >= 900) return 4;   // Very wide screens: 4 cards per row
+    if (screenWidth >= 600) return 3;   // Medium/tablet screens: 3 cards per row
+    return 2;                           // Phone screens: 2 cards per row
   }
 
   // Calculates the width each card should have
   // This ensures all cards have the same width, even in incomplete rows
-  double _getCardWidth(double screenWidth, int cardsPerRow) {
-    // Total horizontal padding (16px on each side)
-    const totalHorizontalPadding = 32.0;
-    
-    // Horizontal padding between cards (4px on each side = 8px total per card)
-    const cardHorizontalPadding = 8.0;
-    
-    // Calculate available width for cards
-    final availableWidth = screenWidth - totalHorizontalPadding;
+  double _getCardWidth(double availableWidth, int cardsPerRow) {
+    // CRITICAL: This method now receives the ACTUAL available width
+    // from LayoutBuilder, which accounts for SafeArea and all padding
     
     // Calculate total spacing between cards in a row
-    final totalSpacing = cardHorizontalPadding * (cardsPerRow - 1);
+    // For N cards, there are (N-1) gaps of 8px each
+    final totalSpacing = 8.0 * (cardsPerRow - 1);
     
     // Calculate width per card
-    // Each card gets equal width, with spacing accounted for
+    // Divide remaining space equally among all cards
     return (availableWidth - totalSpacing) / cardsPerRow;
   }
 
@@ -132,8 +129,6 @@ class _RecallScreenState extends State<RecallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final cardsPerRow = _getCardsPerRow(screenWidth);
     final selectedCount = _countSelectedCards();
 
     return Scaffold(
@@ -157,108 +152,111 @@ class _RecallScreenState extends State<RecallScreen> {
       ),
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
-        // CRITICAL FIX: Wrap the entire body in SingleChildScrollView
-        // This makes the whole screen scrollable when content is too tall
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Instructions banner at the top
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                ),
-                child: Text(
-                  'Select the cards in the order you saw them',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+        // CRITICAL FIX: Use LayoutBuilder to get the ACTUAL available width
+        // This accounts for SafeArea padding, system UI, and all constraints
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // constraints.maxWidth is the TRUE available width after SafeArea
+            final availableWidth = constraints.maxWidth;
+            final cardsPerRow = _getCardsPerRow(availableWidth);
+            
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Instructions banner at the top
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                    ),
+                    child: Text(
+                      'Select the cards in the order you saw them',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
 
-              // UPDATED: Card selectors grid - no longer wrapped in Expanded
-              // Instead, we calculate the exact height needed
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: _buildAllCardRows(screenWidth, cardsPerRow),
-                ),
-              ),
+                  // Card selectors grid
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: _buildAllCardRows(availableWidth, cardsPerRow),
+                    ),
+                  ),
 
-              // Finish button at the bottom
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 16.0,
-                  right: 16.0,
-                  top: 0.0,
-                  bottom: 16.0,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _confirmFinish,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  // Finish button at the bottom
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 16.0,
+                      right: 16.0,
+                      top: 0.0,
+                      bottom: 16.0,
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _confirmFinish,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Finish Recall',
+                          style: TextStyle(fontSize: 18),
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'Finish Recall',
-                      style: TextStyle(fontSize: 18),
-                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  // NEW METHOD: Builds all card rows at once instead of using ListView.builder
+  // Builds all card rows at once instead of using ListView.builder
   // This allows the SingleChildScrollView to handle all scrolling
-  List<Widget> _buildAllCardRows(double screenWidth, int cardsPerRow) {
+  List<Widget> _buildAllCardRows(double availableWidth, int cardsPerRow) {
     // Calculate total number of rows needed
     final totalRows = (widget.correctCards.length / cardsPerRow).ceil();
     
     // Build a list of all row widgets
     return List.generate(totalRows, (rowIndex) {
-      return _buildCardRow(rowIndex, cardsPerRow, screenWidth);
+      return _buildCardRow(rowIndex, cardsPerRow, availableWidth);
     });
   }
 
   // Builds a single row of card selectors
-  Widget _buildCardRow(int rowIndex, int cardsPerRow, double screenWidth) {
+  Widget _buildCardRow(int rowIndex, int cardsPerRow, double availableWidth) {
     // Calculate which cards belong in this row
     final startIndex = rowIndex * cardsPerRow;
     final endIndex = (startIndex + cardsPerRow).clamp(0, widget.correctCards.length);
     
     // Calculate the fixed width each card should have
-    final cardWidth = _getCardWidth(screenWidth, cardsPerRow);
+    // IMPORTANT: Subtract the padding (16px * 2 = 32px) from available width
+    final cardWidth = _getCardWidth(availableWidth - 32, cardsPerRow);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
-      // Changed from spaceEvenly to start alignment
-      // This prevents the last row from stretching cards to fill space
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: List.generate(
-          endIndex - startIndex,  // Number of cards in this row
+          endIndex - startIndex,
               (i) {
             final cardIndex = startIndex + i;
             
-            // Replaced Expanded with fixed-width Container
-            // This ensures all cards have the same width
             return Container(
               width: cardWidth,
-              // Add spacing between cards, but not after the last card
               margin: EdgeInsets.only(
                 right: i < (endIndex - startIndex - 1) ? 8.0 : 0,
               ),
