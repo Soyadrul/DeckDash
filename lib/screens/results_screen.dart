@@ -49,6 +49,26 @@ class ResultsScreen extends StatelessWidget {
     return 2;
   }
 
+  // Calculates the width each card should have
+  // This ensures all cards have the same width, even in incomplete rows
+  double _getCardWidth(double screenWidth, int cardsPerRow) {
+    // Total horizontal padding (16px on each side)
+    const totalHorizontalPadding = 32.0;
+    
+    // Horizontal padding between cards (4px on each side = 8px total per card)
+    const cardHorizontalPadding = 8.0;
+    
+    // Calculate available width for cards
+    final availableWidth = screenWidth - totalHorizontalPadding;
+    
+    // Calculate total spacing between cards in a row
+    final totalSpacing = cardHorizontalPadding * (cardsPerRow - 1);
+    
+    // Calculate width per card
+    // Each card gets equal width, with spacing accounted for
+    return (availableWidth - totalSpacing) / cardsPerRow;
+  }
+
   @override
   Widget build(BuildContext context) {
     final score = _calculateScore();
@@ -111,7 +131,7 @@ class ResultsScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 itemCount: (correctCards.length / cardsPerRow).ceil(),
                 itemBuilder: (context, rowIndex) {
-                  return _buildResultRow(context, rowIndex, cardsPerRow);
+                  return _buildResultRow(context, rowIndex, cardsPerRow, screenWidth);
                 },
               ),
             ),
@@ -157,17 +177,23 @@ class ResultsScreen extends StatelessWidget {
   }
 
   // Builds one row of results showing both user's choice and correct answer
-  Widget _buildResultRow(BuildContext context, int rowIndex, int cardsPerRow) {
+  // Now accepts screenWidth to calculate fixed card width
+  Widget _buildResultRow(BuildContext context, int rowIndex, int cardsPerRow, double screenWidth) {
     final startIndex = rowIndex * cardsPerRow;
     final endIndex = (startIndex + cardsPerRow).clamp(0, correctCards.length);
+    
+    // Calculate the fixed width each card should have
+    final cardWidth = _getCardWidth(screenWidth, cardsPerRow);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 24.0),
       child: Column(
         children: [
           // Row 1: User's selected cards
+          // Changed from spaceEvenly to start alignment
+          // This prevents the last row from stretching cards to fill space
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: List.generate(
               endIndex - startIndex,
                   (i) {
@@ -176,14 +202,18 @@ class ResultsScreen extends StatelessWidget {
                 final correctCard = correctCards[cardIndex];
                 final isCorrect = selectedCard == correctCard;
 
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: _buildCardResult(
-                      selectedCard,
-                      isCorrect,
-                      'Your choice',
-                    ),
+                // Replaced Expanded with fixed-width Container
+                // This ensures all cards have the same width
+                return Container(
+                  width: cardWidth,
+                  // Add spacing between cards, but not after the last card
+                  margin: EdgeInsets.only(
+                    right: i < (endIndex - startIndex - 1) ? 8.0 : 0,
+                  ),
+                  child: _buildCardResult(
+                    selectedCard,
+                    isCorrect,
+                    'Your choice',
                   ),
                 );
               },
@@ -193,23 +223,28 @@ class ResultsScreen extends StatelessWidget {
           const SizedBox(height: 8),
 
           // Row 2: Correct cards
+          // Changed from spaceEvenly to start alignment
+          // This prevents the last row from stretching cards to fill space
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: List.generate(
               endIndex - startIndex,
                   (i) {
                 final cardIndex = startIndex + i;
                 final correctCard = correctCards[cardIndex];
 
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: _buildCardResult(
-                      correctCard,
-                      true,  // Always true for the correct answer row
-                      'Correct card',
-                      isCorrectAnswer: true,
-                    ),
+                // Replaced Expanded with fixed-width Container
+                return Container(
+                  width: cardWidth,
+                  // Add spacing between cards, but not after the last card
+                  margin: EdgeInsets.only(
+                    right: i < (endIndex - startIndex - 1) ? 8.0 : 0,
+                  ),
+                  child: _buildCardResult(
+                    correctCard,
+                    true,  // Always true for the correct answer row
+                    'Correct card',
+                    isCorrectAnswer: true,
                   ),
                 );
               },

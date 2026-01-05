@@ -38,6 +38,26 @@ class _RecallScreenState extends State<RecallScreen> {
     return 2;  // Small screens: 2 cards per row
   }
 
+  // Calculates the width each card should have
+  // This ensures all cards have the same width, even in incomplete rows
+  double _getCardWidth(double screenWidth, int cardsPerRow) {
+    // Total horizontal padding (16px on each side)
+    const totalHorizontalPadding = 32.0;
+    
+    // Horizontal padding between cards (4px on each side = 8px total per card)
+    const cardHorizontalPadding = 8.0;
+    
+    // Calculate available width for cards
+    final availableWidth = screenWidth - totalHorizontalPadding;
+    
+    // Calculate total spacing between cards in a row
+    final totalSpacing = cardHorizontalPadding * (cardsPerRow - 1);
+    
+    // Calculate width per card
+    // Each card gets equal width, with spacing accounted for
+    return (availableWidth - totalSpacing) / cardsPerRow;
+  }
+
   // Callback when user selects a card at a specific position
   void _onCardSelected(int index, PlayingCard? card) {
     setState(() {
@@ -112,10 +132,7 @@ class _RecallScreenState extends State<RecallScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
+    final screenWidth = MediaQuery.of(context).size.width;
     final cardsPerRow = _getCardsPerRow(screenWidth);
     final selectedCount = _countSelectedCards();
 
@@ -147,19 +164,13 @@ class _RecallScreenState extends State<RecallScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Theme
-                    .of(context)
-                    .colorScheme
-                    .primaryContainer,
+                color: Theme.of(context).colorScheme.primaryContainer,
               ),
               child: Text(
                 'Select the cards in the order you saw them',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Theme
-                      .of(context)
-                      .colorScheme
-                      .onPrimaryContainer,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -172,7 +183,7 @@ class _RecallScreenState extends State<RecallScreen> {
                 // Calculate number of rows needed
                 itemCount: (widget.correctCards.length / cardsPerRow).ceil(),
                 itemBuilder: (context, rowIndex) {
-                  return _buildCardRow(rowIndex, cardsPerRow);
+                  return _buildCardRow(rowIndex, cardsPerRow, screenWidth);
                 },
               ),
             ),
@@ -187,10 +198,7 @@ class _RecallScreenState extends State<RecallScreen> {
                   right: 16.0,
                   top: 16.0,
                   // Add padding for keyboard
-                  bottom: MediaQuery
-                      .of(context)
-                      .viewInsets
-                      .bottom + 16.0,
+                  bottom: MediaQuery.of(context).viewInsets.bottom + 16.0,
                 ),
                 child: SizedBox(
                   width: double.infinity,
@@ -198,14 +206,8 @@ class _RecallScreenState extends State<RecallScreen> {
                   child: ElevatedButton(
                     onPressed: _confirmFinish,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme
-                          .of(context)
-                          .colorScheme
-                          .primary,
-                      foregroundColor: Theme
-                          .of(context)
-                          .colorScheme
-                          .onPrimary,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -225,27 +227,38 @@ class _RecallScreenState extends State<RecallScreen> {
   }
 
   // Builds a single row of card selectors
-  Widget _buildCardRow(int rowIndex, int cardsPerRow) {
+  // Now accepts screenWidth to calculate fixed card width
+  Widget _buildCardRow(int rowIndex, int cardsPerRow, double screenWidth) {
     // Calculate which cards belong in this row
     final startIndex = rowIndex * cardsPerRow;
     final endIndex = (startIndex + cardsPerRow).clamp(0, widget.correctCards.length);
+    
+    // Calculate the fixed width each card should have
+    final cardWidth = _getCardWidth(screenWidth, cardsPerRow);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
+      // Changed from spaceEvenly to start alignment
+      // This prevents the last row from stretching cards to fill space
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: List.generate(
           endIndex - startIndex,  // Number of cards in this row
               (i) {
             final cardIndex = startIndex + i;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: CardSelectorDropdown(
-                  index: cardIndex,
-                  selectedCard: _selectedCards[cardIndex],
-                  onCardSelected: _onCardSelected,
-                ),
+            
+            // Replaced Expanded with fixed-width Container
+            // This ensures all cards have the same width
+            return Container(
+              width: cardWidth,
+              // Add spacing between cards, but not after the last card
+              margin: EdgeInsets.only(
+                right: i < (endIndex - startIndex - 1) ? 8.0 : 0,
+              ),
+              child: CardSelectorDropdown(
+                index: cardIndex,
+                selectedCard: _selectedCards[cardIndex],
+                onCardSelected: _onCardSelected,
               ),
             );
           },
