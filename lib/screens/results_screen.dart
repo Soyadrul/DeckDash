@@ -1,5 +1,6 @@
 // Results screen: shows how well the user performed
 // Displays score, percentage, and a visual comparison of selected vs correct cards
+// NOW WITH TIMING INFO: Shows memorization time and auto-submit notification
 
 import 'package:flutter/material.dart';
 import '../models/card_model.dart';
@@ -10,11 +11,19 @@ class ResultsScreen extends StatelessWidget {
 
   // The cards the user selected (may contain nulls if not all were selected)
   final List<PlayingCard?> selectedCards;
+  
+  // ADDED: The time it took to memorize the cards
+  final Duration? memorizationTime;
+  
+  // ADDED: Whether the recall was auto-submitted due to time running out
+  final bool wasAutoSubmitted;
 
   const ResultsScreen({
     super.key,
     required this.correctCards,
     required this.selectedCards,
+    this.memorizationTime,
+    required this.wasAutoSubmitted,
   });
 
   // Calculates how many cards were correctly recalled
@@ -40,6 +49,22 @@ class ResultsScreen extends StatelessWidget {
     if (percentage >= 90) return Colors.green;
     if (percentage >= 70) return Colors.orange;
     return Colors.red;
+  }
+
+  // ADDED: Formats memorization time into readable format
+  // Returns format: MM:SS.CS (minutes:seconds.centiseconds)
+  String _formatMemorizationTime(Duration? duration) {
+    if (duration == null) return 'N/A';
+    
+    int totalSeconds = duration.inSeconds;
+    int minutes = totalSeconds ~/ 60;
+    int seconds = totalSeconds % 60;
+    int centiseconds = (duration.inMilliseconds % 1000) ~/ 10;
+    
+    // Return formatted string with leading zeros
+    return '${minutes.toString().padLeft(2, '0')}:'
+           '${seconds.toString().padLeft(2, '0')}.'
+           '${centiseconds.toString().padLeft(2, '0')}';
   }
 
   // Calculates cards per row based on screen width
@@ -91,6 +116,42 @@ class ResultsScreen extends StatelessWidget {
             return SingleChildScrollView(
               child: Column(
                 children: [
+                  // ADDED: Auto-submit warning banner (only shown if auto-submitted)
+                  if (wasAutoSubmitted)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.2),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Colors.orange.withValues(alpha: 0.5),
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.timer_off,
+                            color: Colors.orange.shade700,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Time ran out! Your recall was automatically submitted.',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.orange.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  
                   // Score panel at the top (made more compact)
                   Container(
                     width: double.infinity,
@@ -128,6 +189,52 @@ class ResultsScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+
+                  // ADDED: Memorization time display
+                  if (memorizationTime != null)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.1),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Colors.blue.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.timer,
+                            color: Colors.blue.shade700,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Memorization Time: ',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.blue.shade700,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            _formatMemorizationTime(memorizationTime),
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.blue.shade900,
+                              fontWeight: FontWeight.bold,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(), // Monospace numbers
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
                   // Card comparison grid
                   Padding(

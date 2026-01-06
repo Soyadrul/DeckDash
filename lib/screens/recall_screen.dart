@@ -1,18 +1,32 @@
 // Recall screen: user must recall and select the cards in the correct order
 // Displays a grid of blank card slots where user selects which card was in each position
+// NOW WITH COUNTDOWN: Shows time remaining and auto-submits when time runs out
 
 import 'package:flutter/material.dart';
 import '../models/card_model.dart';
 import '../widgets/card_selector_dropdown.dart';
+import '../widgets/recall_countdown_timer.dart';  // ADDED: Import countdown timer
 import 'results_screen.dart';
 
 class RecallScreen extends StatefulWidget {
   // The actual cards in their correct order
   final List<PlayingCard> correctCards;
+  
+  // ADDED: Memorization time from previous screen
+  final Duration? memorizationTime;
+  
+  // ADDED: Whether this is multi-deck mode
+  final bool isMultiDeck;
+  
+  // ADDED: Number of decks (for calculating countdown time)
+  final int deckCount;
 
   const RecallScreen({
     super.key,
     required this.correctCards,
+    this.memorizationTime,
+    required this.isMultiDeck,
+    required this.deckCount,
   });
 
   @override
@@ -28,6 +42,21 @@ class _RecallScreenState extends State<RecallScreen> {
     super.initState();
     // Initialize with null values (no cards selected yet)
     _selectedCards = List.filled(widget.correctCards.length, null);
+  }
+
+  // ADDED: Calculate total recall time based on deck configuration
+  // Single deck = 5 minutes (300 seconds)
+  // Multi deck = 5 minutes × number of decks
+  int _calculateRecallTime() {
+    const int baseTimePerDeck = 300; // 5 minutes in seconds
+    
+    if (widget.isMultiDeck) {
+      // Multi deck: 5 minutes per deck
+      return baseTimePerDeck * widget.deckCount;
+    } else {
+      // Single deck: always 5 minutes (regardless of custom card count)
+      return baseTimePerDeck;
+    }
   }
 
   // Calculates how many cards to show per row based on screen width
@@ -78,6 +107,15 @@ class _RecallScreenState extends State<RecallScreen> {
     return selected;
   }
 
+  // ADDED: Called when countdown timer reaches zero
+  // Automatically submits the recall and navigates to results
+  void _handleTimeUp() {
+    print('⏰ Time is up! Auto-submitting recall...');
+    
+    // Navigate to results screen with auto-submit flag set to true
+    _goToResults(wasAutoSubmitted: true);
+  }
+
   // Shows confirmation dialog before finishing recall
   void _confirmFinish() {
     if (!_areAllCardsSelected()) {
@@ -100,7 +138,7 @@ class _RecallScreenState extends State<RecallScreen> {
             FilledButton(
               onPressed: () {
                 Navigator.pop(context);
-                _goToResults();
+                _goToResults(wasAutoSubmitted: false);  // MODIFIED: Pass auto-submit flag
               },
               child: const Text('Finish'),
             ),
@@ -109,12 +147,13 @@ class _RecallScreenState extends State<RecallScreen> {
       );
     } else {
       // All cards selected, go directly to results
-      _goToResults();
+      _goToResults(wasAutoSubmitted: false);  // MODIFIED: Pass auto-submit flag
     }
   }
 
-  // Navigates to the results screen
-  void _goToResults() {
+  // MODIFIED: Navigates to the results screen
+  // Now passes the auto-submit flag and memorization time
+  void _goToResults({required bool wasAutoSubmitted}) {
     // Use pushReplacement so user can't go back to recall
     Navigator.pushReplacement(
       context,
@@ -122,6 +161,8 @@ class _RecallScreenState extends State<RecallScreen> {
         builder: (context) => ResultsScreen(
           correctCards: widget.correctCards,
           selectedCards: _selectedCards,
+          memorizationTime: widget.memorizationTime,  // ADDED: Pass memorization time
+          wasAutoSubmitted: wasAutoSubmitted,          // ADDED: Pass auto-submit flag
         ),
       ),
     );
@@ -152,73 +193,95 @@ class _RecallScreenState extends State<RecallScreen> {
       ),
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
-        // CRITICAL FIX: Use LayoutBuilder to get the ACTUAL available width
-        // This accounts for SafeArea padding, system UI, and all constraints
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            // constraints.maxWidth is the TRUE available width after SafeArea
-            final availableWidth = constraints.maxWidth;
-            final cardsPerRow = _getCardsPerRow(availableWidth);
-            
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  // Instructions banner at the top
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                    ),
-                    child: Text(
-                      'Select the cards in the order you saw them',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+        // ADDED: Use Stack to overlay countdown timer on top of content
+        child: Stack(
+          children: [
+            // EXISTING CONTENT: All your original content
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // constraints.maxWidth is the TRUE available width after SafeArea
+                final availableWidth = constraints.maxWidth;
+                final cardsPerRow = _getCardsPerRow(availableWidth);
+                
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      // MODIFIED: Add extra padding at top to prevent countdown overlap
+                      const SizedBox(height: 60),
+                      
+                      // Instructions banner
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primaryContainer,
+                        ),
+                        child: Text(
+                          'Select the cards in the order you saw them',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
 
-                  // Card selectors grid
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: _buildAllCardRows(availableWidth, cardsPerRow),
-                    ),
-                  ),
+                      // Card selectors grid
+                      Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: _buildAllCardRows(availableWidth, cardsPerRow),
+                        ),
+                      ),
 
-                  // Finish button at the bottom
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 16.0,
-                      right: 16.0,
-                      top: 0.0,
-                      bottom: 16.0,
-                    ),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _confirmFinish,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      // Finish button at the bottom
+                      Padding(
+                        padding: const EdgeInsets.only(
+                          left: 16.0,
+                          right: 16.0,
+                          top: 0.0,
+                          bottom: 16.0,
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _confirmFinish,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Finish Recall',
+                              style: TextStyle(fontSize: 18),
+                            ),
                           ),
                         ),
-                        child: const Text(
-                          'Finish Recall',
-                          style: TextStyle(fontSize: 18),
-                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
+                );
+              },
+            ),
+            
+            // ADDED: Countdown timer positioned at top-center
+            // This floats above all content and is clearly visible
+            Positioned(
+              top: 8,   // 8px from the top
+              left: 0,
+              right: 0,
+              child: Center(
+                child: RecallCountdownTimer(
+                  totalSeconds: _calculateRecallTime(),
+                  onTimeUp: _handleTimeUp,  // Auto-submit when time runs out
+                  showWarning: true,        // Show color warnings when time is low
+                ),
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
     );

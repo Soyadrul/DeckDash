@@ -1,9 +1,11 @@
 // Memorization screen: displays cards one by one for the user to memorize
 // After viewing all cards, user proceeds to the recall phase
+// NOW WITH TIMER: Tracks how long user takes to memorize all cards
 
 import 'package:flutter/material.dart';
 import 'dart:math';  // For Random() function
 import '../models/card_model.dart';
+import '../widgets/memorization_timer.dart';  // ADDED: Import the timer widget
 import 'recall_screen.dart';
 
 class MemorizationScreen extends StatefulWidget {
@@ -40,6 +42,13 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
 
   // Whether the user has viewed all cards
   bool _isCompleted = false;
+
+  // ADDED: GlobalKey to control the timer from this widget
+  // This allows us to stop the timer when user moves to recall phase
+  final GlobalKey<MemorizationTimerState> _timerKey = GlobalKey();
+  
+  // ADDED: Variable to store the memorization time when timer stops
+  Duration? _memorizationTime;
 
   @override
   void initState() {
@@ -112,14 +121,21 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
     }
   }
 
-  // Transitions to the recall phase
+  // MODIFIED: Transitions to the recall phase
+  // Now stops the timer and passes memorization time to recall screen
   void _startRecall() {
+    // ADDED: Stop the memorization timer before navigating
+    _timerKey.currentState?.stopTimer();
+    
     // Use pushReplacement so user can't go back to memorization
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => RecallScreen(
           correctCards: _shuffledCards,
+          memorizationTime: _memorizationTime,  // ADDED: Pass the memorization time
+          isMultiDeck: widget.isMultiDeck,      // ADDED: Pass deck type
+          deckCount: widget.deckCount ?? 1,      // ADDED: Pass deck count
         ),
       ),
     );
@@ -136,107 +152,131 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
       ),
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
-        // SingleChildScrollView makes content scrollable (future-proof)
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            // ConstrainedBox ensures content fills screen height
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top -
-                    MediaQuery.of(context).padding.bottom -
-                    kToolbarHeight - // AppBar height
-                    48, // Padding
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Progress bar showing how many cards have been viewed
-                  LinearProgressIndicator(
-                    value: (_currentIndex + 1) / _shuffledCards.length,
-                    minHeight: 8,
-                    borderRadius: BorderRadius.circular(4),
+        // ADDED: Use Stack to overlay the timer on top of existing content
+        // This allows the timer to float in the top-right corner
+        child: Stack(
+          children: [
+            // EXISTING CONTENT: All your original content stays the same
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                // ConstrainedBox ensures content fills screen height
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).padding.top -
+                        MediaQuery.of(context).padding.bottom -
+                        kToolbarHeight - // AppBar height
+                        48, // Padding
                   ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Progress bar showing how many cards have been viewed
+                      LinearProgressIndicator(
+                        value: (_currentIndex + 1) / _shuffledCards.length,
+                        minHeight: 8,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
 
-                  const SizedBox(height: 48),
+                      const SizedBox(height: 48),
 
-                  // Display the current card
-                  _buildCardDisplay(currentCard),
+                      // Display the current card
+                      _buildCardDisplay(currentCard),
 
-                  const SizedBox(height: 48),
+                      const SizedBox(height: 48),
 
-                  // Navigation controls or completion message
-                  if (!_isCompleted) ...[
-                    // Show previous/next buttons while viewing cards
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // Previous button (disabled on first card)
-                        ElevatedButton.icon(
-                          onPressed: _currentIndex > 0 ? _previousCard : null,
-                          icon: const Icon(Icons.arrow_back),
-                          label: const Text('Previous'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 16,
+                      // Navigation controls or completion message
+                      if (!_isCompleted) ...[
+                        // Show previous/next buttons while viewing cards
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            // Previous button (disabled on first card)
+                            ElevatedButton.icon(
+                              onPressed: _currentIndex > 0 ? _previousCard : null,
+                              icon: const Icon(Icons.arrow_back),
+                              label: const Text('Previous'),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 16,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
 
-                        // Next button (always enabled)
-                        ElevatedButton.icon(
-                          onPressed: _nextCard,
-                          icon: const Icon(Icons.arrow_forward),
-                          label: const Text('Next'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 16,
+                            // Next button (always enabled)
+                            ElevatedButton.icon(
+                              onPressed: _nextCard,
+                              icon: const Icon(Icons.arrow_forward),
+                              label: const Text('Next'),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ] else ...[
+                        // Show completion message and recall button
+                        const Text(
+                          'You\'ve seen all the cards!',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Ready for the recall phase?',
+                          style: TextStyle(fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 32),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _startRecall,
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Start Recall',
+                              style: TextStyle(fontSize: 18),
                             ),
                           ),
                         ),
                       ],
-                    ),
-                  ] else ...[
-                    // Show completion message and recall button
-                    const Text(
-                      'You\'ve seen all the cards!',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Ready for the recall phase?',
-                      style: TextStyle(fontSize: 16),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: _startRecall,
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Start Recall',
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
+            
+            // ADDED: Timer positioned in top-right corner
+            // This floats above all other content and doesn't interfere with layout
+            Positioned(
+              top: 16,   // 16px from the top
+              right: 16, // 16px from the right edge
+              child: MemorizationTimer(
+                key: _timerKey,
+                // Callback that saves the time when timer stops
+                onTimerStop: (elapsed) {
+                  setState(() {
+                    _memorizationTime = elapsed;
+                  });
+                  // Optional: Print to console for debugging
+                  print('Memorization completed in: ${elapsed.inSeconds}.${(elapsed.inMilliseconds % 1000) ~/ 10} seconds');
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
