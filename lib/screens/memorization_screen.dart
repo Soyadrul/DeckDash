@@ -106,6 +106,9 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
       });
     } else {
       // Just viewed the last card, mark as completed
+      // ADDED: Stop the timer when all cards have been viewed
+      _timerKey.currentState?.stopTimer();
+      
       setState(() {
         _isCompleted = true;
       });
@@ -124,7 +127,8 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
   // MODIFIED: Transitions to the recall phase
   // Now stops the timer and passes memorization time to recall screen
   void _startRecall() {
-    // ADDED: Stop the memorization timer before navigating
+    // NOTE: Timer is already stopped in _nextCard() when last card is viewed
+    // This is just a safety check in case timer is somehow still running
     _timerKey.currentState?.stopTimer();
     
     // Use pushReplacement so user can't go back to memorization
@@ -139,6 +143,21 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
         ),
       ),
     );
+  }
+
+  // ADDED: Formats the final memorization time for display
+  // Shows format: MM:SS.CS (same as timer widget)
+  String _formatFinalTime(Duration? duration) {
+    if (duration == null) return '00:00.00';
+    
+    int totalSeconds = duration.inSeconds;
+    int minutes = totalSeconds ~/ 60;
+    int seconds = totalSeconds % 60;
+    int centiseconds = (duration.inMilliseconds % 1000) ~/ 10;
+    
+    return '${minutes.toString().padLeft(2, '0')}:'
+           '${seconds.toString().padLeft(2, '0')}.'
+           '${centiseconds.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -181,8 +200,71 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
 
                       const SizedBox(height: 48),
 
-                      // Display the current card
-                      _buildCardDisplay(currentCard),
+                      // Display the current card ONLY if not completed
+                      // Once all cards are viewed, hide the card display
+                      if (!_isCompleted) _buildCardDisplay(currentCard),
+                      
+                      // ADDED: Show completion message and final time when all cards viewed
+                      if (_isCompleted) ...[
+                        // Show a congratulatory icon
+                        Icon(
+                          Icons.check_circle_outline,
+                          size: 120,
+                          color: Colors.green.shade400,
+                        ),
+                        const SizedBox(height: 24),
+                        // Show final memorization time in a card-like display
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 24,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Colors.blue.withValues(alpha: 0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.timer,
+                                    color: Colors.blue.shade700,
+                                    size: 24,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Memorization Time',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.blue.shade700,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              // Display the final time in large, readable format
+                              Text(
+                                _formatFinalTime(_memorizationTime),
+                                style: TextStyle(
+                                  fontSize: 42,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue.shade900,
+                                  fontFeatures: const [
+                                    FontFeature.tabularFigures(),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: 48),
 
