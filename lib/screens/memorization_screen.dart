@@ -166,8 +166,11 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        // Shows current position: "Card 1 of 52"
-        title: Text('Card ${_currentIndex + 1} of ${_shuffledCards.length}'),
+        // MODIFIED: Show "Card X of X" only when not completed
+        // When completed, show just the app name or empty title
+        title: _isCompleted 
+            ? const Text('Memorization Complete')  // Shows completion message in AppBar
+            : Text('Card ${_currentIndex + 1} of ${_shuffledCards.length}'),
       ),
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
@@ -191,28 +194,27 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Progress bar showing how many cards have been viewed
-                      LinearProgressIndicator(
-                        value: (_currentIndex + 1) / _shuffledCards.length,
-                        minHeight: 8,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+                      // MODIFIED: Progress bar only shown when not completed
+                      // This prevents the progress bar from appearing after all cards viewed
+                      if (!_isCompleted)
+                        LinearProgressIndicator(
+                          value: (_currentIndex + 1) / _shuffledCards.length,
+                          minHeight: 8,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
 
-                      const SizedBox(height: 48),
+                      // MODIFIED: Only add spacing after progress bar if it's showing
+                      if (!_isCompleted) const SizedBox(height: 48),
 
                       // Display the current card ONLY if not completed
                       // Once all cards are viewed, hide the card display
                       if (!_isCompleted) _buildCardDisplay(currentCard),
                       
-                      // ADDED: Show completion message and final time when all cards viewed
+                      // MODIFIED: Show completion content when all cards viewed
+                      // Removed the green check mark icon that was here before
                       if (_isCompleted) ...[
-                        // Show a congratulatory icon
-                        Icon(
-                          Icons.check_circle_outline,
-                          size: 120,
-                          color: Colors.green.shade400,
-                        ),
-                        const SizedBox(height: 24),
+                        //const SizedBox(height: 144),
+                        
                         // Show final memorization time in a card-like display
                         Container(
                           padding: const EdgeInsets.symmetric(
