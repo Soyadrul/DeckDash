@@ -47,7 +47,7 @@ Increase difficulty by training with multiple decks:
 - **Scaled Recall Time**: 5 minutes per deck (e.g., 4 decks = 20 minutes)
 - **Real-time Card Count Display**: Shows total number of cards before starting
 
-### ⏱️ Memorization Phase
+### 📸 Memorization Phase
 
 View and memorize cards one at a time with precision timing:
 
@@ -56,7 +56,7 @@ View and memorize cards one at a time with precision timing:
     - Starts automatically when memorization begins
     - Stops automatically when viewing the last card
     - Displays final time on completion screen
-- **Timer Display**: Non-intrusive timer in top-right corner showing MM:SS.CS format
+- **Timer Display**: Non-intrusive timer in top-right corner showing MM:SS.CS format (minutes:seconds.centiseconds)
 - **Progress Tracking**: Visual progress bar showing how many cards you've seen
 - **Card Counter**: Displays "Card X of Y" in the app bar
 - **Navigation Controls**:
@@ -64,11 +64,10 @@ View and memorize cards one at a time with precision timing:
     - **Previous**: Go back to review previous cards (disabled on first card)
 - **Card Display**: Large, clear card visualization with rank and suit
 - **Completion Screen**:
-    - Green checkmark confirmation
     - Final memorization time prominently displayed
     - Clear "Start Recall" button
 
-### ⏳ Recall Phase
+### 🧠 Recall Phase
 
 Test your memory by recalling the cards in order with countdown pressure:
 
@@ -99,7 +98,7 @@ Comprehensive performance analysis with timing information:
 
 - **Timer Notifications**:
     - **Auto-Submit Warning**: Orange banner if time ran out during recall
-    - **Memorization Time**: Blue info banner showing exact time taken (MM:SS.CS format)
+    - **Memorization Time**: Blue info banner showing exact time taken
 - **Score Display**:
     - Large, prominent score (e.g., "45 / 52")
     - Percentage accuracy (e.g., "86.5% correct")
@@ -172,7 +171,7 @@ Comprehensive performance analysis with timing information:
     - View each card, using Next/Previous to navigate
     - Timer appears subtly in top-right corner
     - After viewing the last card, timer stops automatically
-    - See your final memorization time and a completion checkmark
+    - See your final memorization time
 5. Tap "Start Recall"
 6. **Recall Phase**:
     - Countdown timer starts at 5:00 (top-center)
@@ -298,7 +297,7 @@ DeckDash/
 - **Efficient Shuffling**: Uses Dart's built-in `shuffle()` with Random
 - **Memory Management**: Proper disposal of controllers, timers, and resources
 - **Timer Precision**: 10ms updates for memorization, 1s for countdown (no excessive CPU usage)
-- **Lazy Loading**: ListView.builder for efficient scrolling with many cards
+- **Lazy Loading**: `ListView.builder` for efficient scrolling with many cards
 - **Const Constructors**: Used where possible for better performance
 - **Minimal Rebuilds**: Only timer widgets rebuild during timing, not entire screens
 
@@ -428,9 +427,9 @@ Potential features for future versions:
 - [ ] **Training Modes**:
     - [ ] PAO (Person-Action-Object) practice
     - [ ] Specific suit practice
-    - [ ] Speed drills with decreasing time limits
+    - [ ] Speed drills
 - [ ] **Leaderboards**: Compare times with other users
-- [ ] **Export Results**: Save and share performance data with timestamps
+- [ ] **Import/Export Results**: Save and share performance data with timestamps
 - [ ] **Sound Effects**: Audio feedback and timer beeps
 - [ ] **Haptic Feedback**: Vibration on correct/incorrect selections and time warnings
 - [ ] **Multiple Languages**: Internationalization support

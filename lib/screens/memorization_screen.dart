@@ -213,7 +213,6 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                       // MODIFIED: Show completion content when all cards viewed
                       // Removed the green check mark icon that was here before
                       if (_isCompleted) ...[
-                        //const SizedBox(height: 144),
                         
                         // Show final memorization time in a card-like display
                         Container(
