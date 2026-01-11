@@ -37,6 +37,9 @@ dependencies:
 
   # Package for rendering SVG images
   flutter_svg: ^2.0.0
+  
+  # For storing the user preferences locally
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

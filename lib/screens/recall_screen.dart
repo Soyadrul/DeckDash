@@ -1,24 +1,17 @@
-// Recall screen: user must recall and select the cards in the correct order
-// Displays a grid of blank card slots where user selects which card was in each position
-// NOW WITH COUNTDOWN: Shows time remaining and auto-submits when time runs out
+/// recall_screen.dart
+/// UPDATED: Added back gesture confirmation to prevent accidental exits
 
 import 'package:flutter/material.dart';
 import '../models/card_model.dart';
+import '../models/app_settings.dart';
 import '../widgets/card_selector_dropdown.dart';
-import '../widgets/recall_countdown_timer.dart';  // ADDED: Import countdown timer
+import '../widgets/recall_countdown_timer.dart';
 import 'results_screen.dart';
 
 class RecallScreen extends StatefulWidget {
-  // The actual cards in their correct order
   final List<PlayingCard> correctCards;
-  
-  // ADDED: Memorization time from previous screen
   final Duration? memorizationTime;
-  
-  // ADDED: Whether this is multi-deck mode
   final bool isMultiDeck;
-  
-  // ADDED: Number of decks (for calculating countdown time)
   final int deckCount;
 
   const RecallScreen({
@@ -34,69 +27,52 @@ class RecallScreen extends StatefulWidget {
 }
 
 class _RecallScreenState extends State<RecallScreen> {
-  // User's selected cards (null = not yet selected)
   late List<PlayingCard?> _selectedCards;
+  
+  // Get settings instance
+  final AppSettings _settings = AppSettings();
+  
+  // Back confirmation state
+  DateTime? _lastBackPress;
+  bool _showBackBanner = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize with null values (no cards selected yet)
     _selectedCards = List.filled(widget.correctCards.length, null);
   }
 
-  // ADDED: Calculate total recall time based on deck configuration
-  // Single deck = 5 minutes (300 seconds)
-  // Multi deck = 5 minutes × number of decks
   int _calculateRecallTime() {
-    const int baseTimePerDeck = 300; // 5 minutes in seconds
+    const int baseTimePerDeck = 300;
     
     if (widget.isMultiDeck) {
-      // Multi deck: 5 minutes per deck
       return baseTimePerDeck * widget.deckCount;
     } else {
-      // Single deck: always 5 minutes (regardless of custom card count)
       return baseTimePerDeck;
     }
   }
 
-  // Calculates how many cards to show per row based on screen width
-  // Larger screens show more cards per row
   int _getCardsPerRow(double screenWidth) {
-    // Adjusted breakpoints to be more conservative
-    // This prevents trying to fit too many cards on smaller screens
-    if (screenWidth >= 900) return 4;   // Very wide screens: 4 cards per row
-    if (screenWidth >= 600) return 3;   // Medium/tablet screens: 3 cards per row
-    return 2;                           // Phone screens: 2 cards per row
+    if (screenWidth >= 900) return 4;
+    if (screenWidth >= 600) return 3;
+    return 2;
   }
 
-  // Calculates the width each card should have
-  // This ensures all cards have the same width, even in incomplete rows
   double _getCardWidth(double availableWidth, int cardsPerRow) {
-    // CRITICAL: This method now receives the ACTUAL available width
-    // from LayoutBuilder, which accounts for SafeArea and all padding
-    
-    // Calculate total spacing between cards in a row
-    // For N cards, there are (N-1) gaps of 8px each
     final totalSpacing = 8.0 * (cardsPerRow - 1);
-    
-    // Calculate width per card
-    // Divide remaining space equally among all cards
     return (availableWidth - totalSpacing) / cardsPerRow;
   }
 
-  // Callback when user selects a card at a specific position
   void _onCardSelected(int index, PlayingCard? card) {
     setState(() {
       _selectedCards[index] = card;
     });
   }
 
-  // Checks if user has selected a card for every position
   bool _areAllCardsSelected() {
     return !_selectedCards.contains(null);
   }
 
-  // Counts how many cards the user selected
   int _countSelectedCards() {
     int selected = 0;
     for (int i = 0; i < _selectedCards.length; i++) {
@@ -107,19 +83,12 @@ class _RecallScreenState extends State<RecallScreen> {
     return selected;
   }
 
-  // ADDED: Called when countdown timer reaches zero
-  // Automatically submits the recall and navigates to results
   void _handleTimeUp() {
-    print('⏰ Time is up! Auto-submitting recall...');
-    
-    // Navigate to results screen with auto-submit flag set to true
     _goToResults(wasAutoSubmitted: true);
   }
 
-  // Shows confirmation dialog before finishing recall
   void _confirmFinish() {
     if (!_areAllCardsSelected()) {
-      // Warn if not all cards are selected
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -129,16 +98,14 @@ class _RecallScreenState extends State<RecallScreen> {
                   'Do you still want to finish the recall?'
           ),
           actions: [
-            // Cancel button
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Continue'),
             ),
-            // Confirm button
             FilledButton(
               onPressed: () {
                 Navigator.pop(context);
-                _goToResults(wasAutoSubmitted: false);  // MODIFIED: Pass auto-submit flag
+                _goToResults(wasAutoSubmitted: false);
               },
               child: const Text('Finish'),
             ),
@@ -146,167 +113,230 @@ class _RecallScreenState extends State<RecallScreen> {
         ),
       );
     } else {
-      // All cards selected, go directly to results
-      _goToResults(wasAutoSubmitted: false);  // MODIFIED: Pass auto-submit flag
+      _goToResults(wasAutoSubmitted: false);
     }
   }
 
-  // MODIFIED: Navigates to the results screen
-  // Now passes the auto-submit flag and memorization time
   void _goToResults({required bool wasAutoSubmitted}) {
-    // Use pushReplacement so user can't go back to recall
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
         builder: (context) => ResultsScreen(
           correctCards: widget.correctCards,
           selectedCards: _selectedCards,
-          memorizationTime: widget.memorizationTime,  // ADDED: Pass memorization time
-          wasAutoSubmitted: wasAutoSubmitted,          // ADDED: Pass auto-submit flag
+          memorizationTime: widget.memorizationTime,
+          wasAutoSubmitted: wasAutoSubmitted,
         ),
       ),
     );
+  }
+
+  /// Handles back button press with confirmation if enabled
+  Future<bool> _onWillPop() async {
+    // If back confirmation is disabled, allow immediate back
+    if (!_settings.enableBackConfirmation) {
+      return true;
+    }
+
+    final now = DateTime.now();
+    
+    // Check if this is the second press within 5 seconds
+    if (_lastBackPress != null && 
+        now.difference(_lastBackPress!) < const Duration(seconds: 5)) {
+      // Second press within time limit - allow exit
+      return true;
+    }
+
+    // First press - show banner and start timer
+    setState(() {
+      _lastBackPress = now;
+      _showBackBanner = true;
+    });
+
+    // Hide banner after 5 seconds
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _showBackBanner = false;
+          _lastBackPress = null;
+        });
+      }
+    });
+
+    // Don't exit yet
+    return false;
   }
 
   @override
   Widget build(BuildContext context) {
     final selectedCount = _countSelectedCards();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Recall Phase'),
-        actions: [
-          // Shows the number of selected cards in the app bar (selected/total)
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: Text(
-                '$selectedCount/${widget.correctCards.length}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      // SafeArea prevents content from being hidden by system UI
-      body: SafeArea(
-        // ADDED: Use Stack to overlay countdown timer on top of content
-        child: Stack(
-          children: [
-            // EXISTING CONTENT: All your original content
-            LayoutBuilder(
-              builder: (context, constraints) {
-                // constraints.maxWidth is the TRUE available width after SafeArea
-                final availableWidth = constraints.maxWidth;
-                final cardsPerRow = _getCardsPerRow(availableWidth);
-                
-                return SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      // MODIFIED: Add extra padding at top to prevent countdown overlap
-                      const SizedBox(height: 60),
-                      
-                      // Instructions banner
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer,
-                        ),
-                        child: Text(
-                          'Select the cards in the order you saw them',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-
-                      // Card selectors grid
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: _buildAllCardRows(availableWidth, cardsPerRow),
-                        ),
-                      ),
-
-                      // Finish button at the bottom
-                      Padding(
-                        padding: const EdgeInsets.only(
-                          left: 16.0,
-                          right: 16.0,
-                          top: 0.0,
-                          bottom: 16.0,
-                        ),
-                        child: SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: _confirmFinish,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text(
-                              'Finish Recall',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Recall Phase'),
+          actions: [
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: Text(
+                  '$selectedCount/${widget.correctCards.length}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                );
-              },
-            ),
-            
-            // ADDED: Countdown timer positioned at top-center
-            // This floats above all content and is clearly visible
-            Positioned(
-              top: 8,   // 8px from the top
-              left: 0,
-              right: 0,
-              child: Center(
-                child: RecallCountdownTimer(
-                  totalSeconds: _calculateRecallTime(),
-                  onTimeUp: _handleTimeUp,  // Auto-submit when time runs out
-                  showWarning: true,        // Show color warnings when time is low
                 ),
               ),
             ),
           ],
         ),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final availableWidth = constraints.maxWidth;
+                  final cardsPerRow = _getCardsPerRow(availableWidth);
+                  
+                  return SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 60),
+                        
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                          ),
+                          child: Text(
+                            'Select the cards in the order you saw them',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: _buildAllCardRows(availableWidth, cardsPerRow),
+                          ),
+                        ),
+
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 16.0,
+                            right: 16.0,
+                            top: 0.0,
+                            bottom: 16.0,
+                          ),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 56,
+                            child: ElevatedButton(
+                              onPressed: _confirmFinish,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'Finish Recall',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              
+              // Countdown timer
+              Positioned(
+                top: 8,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: RecallCountdownTimer(
+                    totalSeconds: _calculateRecallTime(),
+                    onTimeUp: _handleTimeUp,
+                    showWarning: true,
+                  ),
+                ),
+              ),
+              
+              // Back confirmation banner
+              if (_showBackBanner)
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Material(
+                    elevation: 4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade100,
+                        border: Border(
+                          bottom: BorderSide(
+                            color: Colors.orange.shade400,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: Colors.orange.shade700,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Press back again within 5 seconds to exit',
+                              style: TextStyle(
+                                color: Colors.orange.shade900,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  // Builds all card rows at once instead of using ListView.builder
-  // This allows the SingleChildScrollView to handle all scrolling
   List<Widget> _buildAllCardRows(double availableWidth, int cardsPerRow) {
-    // Calculate total number of rows needed
     final totalRows = (widget.correctCards.length / cardsPerRow).ceil();
     
-    // Build a list of all row widgets
     return List.generate(totalRows, (rowIndex) {
       return _buildCardRow(rowIndex, cardsPerRow, availableWidth);
     });
   }
 
-  // Builds a single row of card selectors
   Widget _buildCardRow(int rowIndex, int cardsPerRow, double availableWidth) {
-    // Calculate which cards belong in this row
     final startIndex = rowIndex * cardsPerRow;
     final endIndex = (startIndex + cardsPerRow).clamp(0, widget.correctCards.length);
     
-    // Calculate the fixed width each card should have
-    // IMPORTANT: Subtract the padding (16px * 2 = 32px) from available width
     final cardWidth = _getCardWidth(availableWidth - 32, cardsPerRow);
 
     return Padding(

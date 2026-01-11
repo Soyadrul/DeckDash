@@ -1,9 +1,10 @@
-// Configuration screen for single deck mode
-// Users can choose between a full deck (52 cards) or a custom number of cards
+/// single_deck_config_screen.dart
+/// Configuration screen for single deck mode
+/// Users can choose between a full deck (52 cards) or a custom number of cards
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';  // For input formatters
-import 'memorization_screen.dart';
+import 'memorization_screen.dart';  // Import the memorization screen
 
 // StatefulWidget because this screen has changing state (user selections)
 class SingleDeckConfigScreen extends StatefulWidget {

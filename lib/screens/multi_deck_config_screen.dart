@@ -1,9 +1,10 @@
-// Configuration screen for multi deck mode
-// Users can choose number of decks and shuffling method
+/// multi_deck_config_screen.dart
+/// Configuration screen for multi deck mode
+/// Users can choose number of decks and shuffling method
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'memorization_screen.dart';
+import 'memorization_screen.dart';  // Import the memorization screen
 
 class MultiDeckConfigScreen extends StatefulWidget {
   const MultiDeckConfigScreen({super.key});

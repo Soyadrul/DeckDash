@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'single_deck_config_screen.dart';
 import 'multi_deck_config_screen.dart';
+import 'settings_screen.dart'; // ADDED: Import settings screen
 
 // StatelessWidget because this screen doesn't have any changing state
 class HomeScreen extends StatelessWidget {
@@ -17,6 +18,23 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Speed Card Trainer'),
         centerTitle: true, // Centers the title text
+        // ADDED: Settings button in app bar
+        actions: [
+          // IconButton for settings
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings', // Shows tooltip on long press
+            onPressed: () {
+              // Navigate to settings screen
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
 
       // Body: the main content area below the app bar
