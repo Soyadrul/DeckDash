@@ -1,8 +1,9 @@
 /// settings_screen.dart
 /// This file contains the Settings page where users can customize app preferences
-/// UPDATED: Organized settings into categories and added new options
+/// UPDATED: Version now reads dynamically from pubspec.yaml
 
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../models/app_settings.dart';
 import '../main.dart';
 
@@ -25,6 +26,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late CardsDisplayMode _cardsDisplayMode;
   late bool _enableBackConfirmation;
   late String _selectedLanguage;
+  
+  // Variable to store app version info
+  String _appVersion = 'Loading...';
+  String _buildNumber = '';
 
   @override
   void initState() {
@@ -35,6 +40,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _cardsDisplayMode = _settings.cardsDisplayMode;
     _enableBackConfirmation = _settings.enableBackConfirmation;
     _selectedLanguage = _settings.languageCode;
+    
+    // Load app version information
+    _loadAppVersion();
+  }
+
+  /// Loads the app version and build number from package info
+  /// This reads directly from pubspec.yaml at runtime
+  Future<void> _loadAppVersion() async {
+    try {
+      // Get package information
+      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
+      
+      // Update the UI with version info
+      setState(() {
+        _appVersion = packageInfo.version;       // e.g., "1.1.0"
+        _buildNumber = packageInfo.buildNumber;  // e.g., "1"
+      });
+    } catch (e) {
+      // If there's an error loading version, show error message
+      setState(() {
+        _appVersion = 'Unknown';
+        _buildNumber = '';
+      });
+      print('Error loading app version: $e');
+    }
   }
 
   /// Updates the theme mode setting
@@ -478,7 +508,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  /// Builds the about card
+  /// Builds the about card with dynamic version info
   Widget _buildAboutCard() {
     return Card(
       elevation: 2,
@@ -504,7 +534,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            const Text('Version 1.0.0'),
+            
+            // UPDATED: Version now shows dynamically from pubspec.yaml
+            Text(
+              //'Version $_appVersion${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
+              'Version $_appVersion',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 8),
             const Text(
               'A Flutter-based training app for Speed Card memorization',

@@ -40,6 +40,9 @@ dependencies:
   
   # For storing the user preferences locally
   shared_preferences: ^2.2.2
+  
+  # To get package version (in settings page)
+  package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:
