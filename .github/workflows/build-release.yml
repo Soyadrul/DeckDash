@@ -7,9 +7,10 @@ name: Flutter Build and Release
 
 # Workflow Triggers
 on:
-  # Trigger on pushes to main branch (but ignore markdown file changes)
+  # Trigger on pushes to any branch (but ignore markdown file changes)
+  # Use [BUILD] in commit message to trigger builds
+  # Use [BUILD] + [PUBLISH] to create releases
   push:
-    branches: [ main ]
     paths-ignore: ['**/*.md']
 
   # Allow manual triggering from GitHub Actions tab
@@ -177,12 +178,13 @@ jobs:
     # Step 2: Set up Java for Android builds
     # -------------------------------------------------------------------------
     # Java Development Kit is required to compile Android applications
+    # Using Java 21 to match project requirements
     # Only runs for Android target to save time on other platforms
     - name: Set up Java (Android only)
       if: matrix.target == 'android'
       uses: actions/setup-java@v4
       with:
-        java-version: '17'  # Android requires Java 17 for latest Gradle
+        java-version: '21'  # Android project requires Java 21
         distribution: 'temurin'  # Eclipse Temurin is stable and well-supported
 
     # -------------------------------------------------------------------------
@@ -366,11 +368,12 @@ jobs:
   # JOB 3: Create GitHub Release with all builds
   # ============================================================================
   # IMPORTANT: This job ONLY runs if BOTH [BUILD] and [PUBLISH] are in commit message
+  # AND only from main branch (safety measure to prevent accidental releases from feature branches)
   create-release:
     name: Create GitHub Release
     needs: [check-trigger, build]
-    # Only run if BOTH build trigger AND publish trigger are true
-    if: needs.check-trigger.outputs.should_build == 'true' && needs.check-trigger.outputs.should_publish == 'true'
+    # Only run if BOTH build trigger AND publish trigger are true AND on main branch
+    if: needs.check-trigger.outputs.should_build == 'true' && needs.check-trigger.outputs.should_publish == 'true' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     
     steps:
