@@ -15,15 +15,18 @@ on:
   # Allow manual triggering from GitHub Actions tab
   workflow_dispatch:
     inputs:
+      action:
+        description: 'What do you want to do?'
+        required: true
+        type: choice
+        options:
+          - 'Build only (test compilation)'
+          - 'Build and publish release'
+        default: 'Build only (test compilation)'
       version:
-        description: 'Release version (e.g., v1.0.0)'
-        required: true
-        default: 'v1.0.0'
-      publish_release:
-        description: 'Create GitHub Release?'
-        required: true
-        type: boolean
-        default: false
+        description: 'Release version (only if publishing, e.g., v1.0.0)'
+        required: false
+        default: ''
 
 jobs:
   # ============================================================================
@@ -51,55 +54,88 @@ jobs:
         # Extract the latest commit message
         COMMIT_MSG="${{ github.event.head_commit.message }}"
         
-        # Check if [BUILD] appears in the commit message
-        # Also allow manual workflow dispatch to always build
-        if [[ "$COMMIT_MSG" =~ \[BUILD\] ]] || [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+        # Determine if this is a manual workflow dispatch
+        IS_MANUAL="${{ github.event_name == 'workflow_dispatch' }}"
+        
+        # Check if [BUILD] appears in the commit message or manual trigger
+        if [[ "$COMMIT_MSG" =~ \[BUILD\] ]] || [[ "$IS_MANUAL" == "true" ]]; then
           echo "should_build=true" >> $GITHUB_OUTPUT
-          echo "✅ Build trigger detected: [BUILD] found in commit message"
+          echo "✅ Build trigger detected"
         else
           echo "should_build=false" >> $GITHUB_OUTPUT
           echo "⏭️  No build trigger found, skipping build"
         fi
         
         # Check if BOTH [BUILD] and [PUBLISH] appear in the commit message
-        # Release will only be created if both keywords are present
+        # OR if manual trigger is set to "Build and publish release"
         if [[ "$COMMIT_MSG" =~ \[BUILD\] ]] && [[ "$COMMIT_MSG" =~ \[PUBLISH\] ]]; then
           echo "should_publish=true" >> $GITHUB_OUTPUT
-          echo "✅ Publish trigger detected: Both [BUILD] and [PUBLISH] found"
+          echo "✅ Publish trigger detected: Both [BUILD] and [PUBLISH] found in commit"
           echo "📦 A GitHub release will be created after build completes"
-        elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]] && [[ "${{ github.event.inputs.publish_release }}" == "true" ]]; then
+        elif [[ "$IS_MANUAL" == "true" ]] && [[ "${{ github.event.inputs.action }}" == "Build and publish release" ]]; then
           echo "should_publish=true" >> $GITHUB_OUTPUT
-          echo "✅ Manual publish selected via workflow dispatch"
+          echo "✅ Manual publish selected: Build and publish release"
+          echo "📦 A GitHub release will be created after build completes"
         else
           echo "should_publish=false" >> $GITHUB_OUTPUT
-          echo "ℹ️  No publish trigger - builds will be created but no release will be published"
+          if [[ "$COMMIT_MSG" =~ \[BUILD\] ]] || [[ "$IS_MANUAL" == "true" ]]; then
+            echo "ℹ️  Build-only mode: Testing compilation without creating release"
+          fi
           echo "ℹ️  To create a release, include both [BUILD] and [PUBLISH] in commit message"
         fi
     
     # Determine the version number for this release
+    # Only required if publishing a release (not for build-only mode)
     - name: Determine version number
       id: version
       run: |
-        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-          # Use manually provided version from workflow dispatch
-          VERSION="${{ github.event.inputs.version }}"
+        # Check if we're publishing (need version) or just building (no version needed)
+        SHOULD_PUBLISH="${{ steps.check.outputs.should_publish }}"
+        
+        if [[ "$SHOULD_PUBLISH" == "false" ]]; then
+          # Build-only mode: No version needed, just testing compilation
+          echo "version=none" >> $GITHUB_OUTPUT
+          echo "ℹ️  Build-only mode: Version not required (no release will be created)"
+          exit 0
+        fi
+        
+        # Publishing mode: Version is required
+        echo "📦 Publishing mode: Determining release version..."
+        
+        # Check if manual trigger with version provided
+        IS_MANUAL="${{ github.event_name == 'workflow_dispatch' }}"
+        MANUAL_VERSION="${{ github.event.inputs.version }}"
+        
+        if [[ "$IS_MANUAL" == "true" ]] && [[ -n "$MANUAL_VERSION" ]]; then
+          # Use manually provided version
+          # Ensure it starts with 'v'
+          if [[ "$MANUAL_VERSION" =~ ^v ]]; then
+            VERSION="$MANUAL_VERSION"
+          else
+            VERSION="v$MANUAL_VERSION"
+          fi
+          echo "📝 Using manually specified version: $VERSION"
         else
           # Try to extract version from commit message
-          # Looks for patterns like: [BUILD] v1.2.3 or [BUILD] 1.2.3
           COMMIT_MSG="${{ github.event.head_commit.message }}"
           
           if [[ "$COMMIT_MSG" =~ v?([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             # Found semantic version in commit message
             VERSION="v${BASH_REMATCH[1]}"
+            echo "📝 Version extracted from commit message: $VERSION"
           else
-            # Generate version from current date and short commit SHA
-            # Example: v2024.01.11-a3c4d5f
+            # No version found: Generate from current date and short commit SHA
             VERSION="v$(date +'%Y.%m.%d')-${GITHUB_SHA::7}"
+            echo "⚠️  No version found in commit message"
+            echo "📝 Auto-generated version: $VERSION"
+            echo ""
+            echo "💡 Tip: Include version in commit message for releases:"
+            echo "   Example: git commit -m '[BUILD] [PUBLISH] v1.2.0 - New features'"
           fi
         fi
         
         echo "version=$VERSION" >> $GITHUB_OUTPUT
-        echo "📦 Release version will be: $VERSION"
+        echo "✅ Release version will be: $VERSION"
 
   # ============================================================================
   # JOB 2: Build Flutter applications for Linux and Android only
