@@ -207,12 +207,12 @@ jobs:
     # Step 4: Set up Flutter SDK
     # -------------------------------------------------------------------------
     # Downloads and configures the Flutter development environment
+    # Uses latest stable version to ensure compatibility with project requirements
     # Caching enabled to speed up subsequent workflow runs
     - name: Set up Flutter SDK
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.24.0'
-        channel: 'stable'
+        channel: 'stable'  # Always use latest stable Flutter version
         cache: true  # Cache Flutter SDK between runs
 
     # -------------------------------------------------------------------------
