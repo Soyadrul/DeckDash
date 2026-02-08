@@ -268,17 +268,26 @@ jobs:
               echo "Building signed APK for production distribution..."
               
               # Decode the base64-encoded keystore file
-              # This recreates the .jks keystore file from the GitHub secret
+              # Place it in android/app/ directory where Gradle expects it
               echo "$KEYSTORE_BASE64" | base64 --decode > android/app/release-keystore.jks
               
-              # Create key.properties file with signing configuration
-              # This file tells Gradle how to sign the APK
+              # Create key.properties file in android/ directory
+              # Using app/release-keystore.jks (relative from android/ directory)
+              # This works with both Groovy and Kotlin DSL build.gradle files
               cat > android/key.properties << EOF
-        storePassword=$KEYSTORE_PASSWORD
-        keyPassword=$KEY_PASSWORD
-        keyAlias=$KEY_ALIAS
-        storeFile=release-keystore.jks
-        EOF
+storePassword=$KEYSTORE_PASSWORD
+keyPassword=$KEY_PASSWORD
+keyAlias=$KEY_ALIAS
+storeFile=app/release-keystore.jks
+EOF
+              
+              # Display the key.properties for debugging (without sensitive data)
+              echo ""
+              echo "📋 Signing configuration created:"
+              echo "  - Keystore location: android/app/release-keystore.jks"
+              echo "  - Key properties: android/key.properties"
+              echo "  - Key alias: $KEY_ALIAS"
+              echo "  - Store file path: app/release-keystore.jks"
               
               # Build the release APK with signing
               flutter build apk --release
@@ -286,14 +295,27 @@ jobs:
               # Verify the APK signature to ensure it was signed correctly
               echo ""
               echo "🔍 Verifying APK signature..."
-              $JAVA_HOME/bin/jarsigner -verify -verbose \
-                build/app/outputs/flutter-apk/app-release.apk
               
-              # Display APK details for verification
-              echo ""
-              echo "📋 APK Details:"
-              $JAVA_HOME/bin/jarsigner -verify -verbose -certs \
-                build/app/outputs/flutter-apk/app-release.apk | grep "CN="
+              # Check if APK is signed (should show certificate info)
+              if $JAVA_HOME/bin/jarsigner -verify -verbose build/app/outputs/flutter-apk/app-release.apk 2>&1 | grep -q "jar verified"; then
+                echo "✅ APK is properly signed!"
+                echo ""
+                echo "📋 Certificate Details:"
+                $JAVA_HOME/bin/jarsigner -verify -verbose -certs build/app/outputs/flutter-apk/app-release.apk 2>&1 | grep "CN=" | head -n 1
+              else
+                echo "❌ ERROR: APK is NOT signed!"
+                echo ""
+                echo "Debugging information:"
+                echo "Key properties file contents:"
+                cat android/key.properties
+                echo ""
+                echo "Keystore file exists:"
+                ls -lh android/app/release-keystore.jks || echo "Keystore file NOT found!"
+                echo ""
+                echo "Checking if build.gradle can find the file..."
+                echo ""
+                exit 1
+              fi
               
               # Clean up sensitive files for security
               # Never leave keystore files or passwords in the workspace
