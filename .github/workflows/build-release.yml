@@ -275,11 +275,11 @@ jobs:
               # Using app/release-keystore.jks (relative from android/ directory)
               # This works with both Groovy and Kotlin DSL build.gradle files
               cat > android/key.properties << EOF
-storePassword=$KEYSTORE_PASSWORD
-keyPassword=$KEY_PASSWORD
-keyAlias=$KEY_ALIAS
-storeFile=app/release-keystore.jks
-EOF
+        storePassword=$KEYSTORE_PASSWORD
+        keyPassword=$KEY_PASSWORD
+        keyAlias=$KEY_ALIAS
+        storeFile=app/release-keystore.jks
+        EOF
               
               # Display the key.properties for debugging (without sensitive data)
               echo ""
