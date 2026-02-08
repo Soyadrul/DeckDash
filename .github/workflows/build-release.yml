@@ -278,7 +278,7 @@ jobs:
         storePassword=$KEYSTORE_PASSWORD
         keyPassword=$KEY_PASSWORD
         keyAlias=$KEY_ALIAS
-        storeFile=app/release-keystore.jks
+        storeFile=release-keystore.jks
         EOF
               
               # Display the key.properties for debugging (without sensitive data)
