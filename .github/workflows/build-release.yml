@@ -272,13 +272,13 @@ jobs:
               echo "$KEYSTORE_BASE64" | base64 --decode > android/app/release-keystore.jks
               
               # Create key.properties file in android/ directory
-              # Using app/release-keystore.jks (relative from android/ directory)
-              # This works with both Groovy and Kotlin DSL build.gradle files
+              # For Kotlin DSL build.gradle.kts: file() resolves from android/app/ directory
+              # So we use just the filename "release-keystore.jks"
               cat > android/key.properties << EOF
         storePassword=$KEYSTORE_PASSWORD
         keyPassword=$KEY_PASSWORD
         keyAlias=$KEY_ALIAS
-        storeFile=app/release-keystore.jks
+        storeFile=release-keystore.jks
         EOF
               
               # Display the key.properties for debugging (without sensitive data)
@@ -287,9 +287,18 @@ jobs:
               echo "  - Keystore location: android/app/release-keystore.jks"
               echo "  - Key properties: android/key.properties"
               echo "  - Key alias: $KEY_ALIAS"
-              echo "  - Store file path: app/release-keystore.jks"
+              echo "  - Store file path: release-keystore.jks (resolves from android/app/)"
+              
+              # Verify keystore file exists before building
+              if [ -f "android/app/release-keystore.jks" ]; then
+                echo "  - ✅ Keystore file verified at correct location"
+              else
+                echo "  - ❌ ERROR: Keystore file not found!"
+                exit 1
+              fi
               
               # Build the release APK with signing
+              echo ""
               flutter build apk --release
               
               # Verify the APK signature to ensure it was signed correctly
@@ -309,10 +318,8 @@ jobs:
                 echo "Key properties file contents:"
                 cat android/key.properties
                 echo ""
-                echo "Keystore file exists:"
-                ls -lh android/app/release-keystore.jks || echo "Keystore file NOT found!"
-                echo ""
-                echo "Checking if build.gradle can find the file..."
+                echo "Keystore file location:"
+                ls -lh android/app/*.jks || echo "No keystore files found in android/app/"
                 echo ""
                 exit 1
               fi
