@@ -188,6 +188,24 @@ jobs:
         distribution: 'temurin'  # Eclipse Temurin is stable and well-supported
 
     # -------------------------------------------------------------------------
+    # Step 2.1: Install Android build tools for signing verification
+    # -------------------------------------------------------------------------
+    # Android build tools are required to use apksigner for verifying APK signatures
+    - name: Install Android build tools (Android only)
+      if: matrix.target == 'android'
+      run: |
+        # Find the latest build tools version
+        LATEST_BUILD_TOOLS=$(ls -1 $ANDROID_HOME/build-tools/ | sort -V | tail -n 1)
+        echo "Latest build tools version: $LATEST_BUILD_TOOLS"
+        
+        # Add the build tools to PATH
+        echo "$ANDROID_HOME/build-tools/$LATEST_BUILD_TOOLS" >> $GITHUB_PATH
+        
+        # Verify apksigner is available
+        which apksigner
+        apksigner --version
+
+    # -------------------------------------------------------------------------
     # Step 3: Install Linux system dependencies
     # -------------------------------------------------------------------------
     # Flutter Linux apps require GTK3 libraries and build tools
@@ -304,13 +322,17 @@ jobs:
               # Verify the APK signature to ensure it was signed correctly
               echo ""
               echo "🔍 Verifying APK signature..."
-              
-              # Check if APK is signed (should show certificate info)
-              if $JAVA_HOME/bin/jarsigner -verify -verbose build/app/outputs/flutter-apk/app-release.apk 2>&1 | grep -q "jar verified"; then
-                echo "✅ APK is properly signed!"
+
+              # Check if APK is signed using apksigner (more reliable for modern APK signatures)
+              if apksigner verify --verbose build/app/outputs/flutter-apk/app-release.apk 2>&1 | grep -q "Verified using v1 scheme" || \
+                 apksigner verify --verbose build/app/outputs/flutter-apk/app-release.apk 2>&1 | grep -q "Verified using v2 scheme" || \
+                 apksigner verify --verbose build/app/outputs/flutter-apk/app-release.apk 2>&1 | grep -q "Verified using v3 scheme"; then
+                echo "✅ APK is properly signed with signature scheme v1, v2, or v3!"
+                
+                # Show signature details
                 echo ""
-                echo "📋 Certificate Details:"
-                $JAVA_HOME/bin/jarsigner -verify -verbose -certs build/app/outputs/flutter-apk/app-release.apk 2>&1 | grep "CN=" | head -n 1
+                echo "📋 Signature Details:"
+                apksigner verify --verbose build/app/outputs/flutter-apk/app-release.apk | grep -E "(Signer|Certificate|Verified using)"
               else
                 echo "❌ ERROR: APK is NOT signed!"
                 echo ""
@@ -320,6 +342,9 @@ jobs:
                 echo ""
                 echo "Keystore file location:"
                 ls -lh android/app/*.jks || echo "No keystore files found in android/app/"
+                echo ""
+                echo "APK signature verification output:"
+                apksigner verify --verbose build/app/outputs/flutter-apk/app-release.apk
                 echo ""
                 exit 1
               fi
