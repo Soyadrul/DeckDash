@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';  // For input formatters
 import 'memorization_screen.dart';  // Import the memorization screen
+import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
 
 // StatefulWidget because this screen has changing state (user selections)
 class SingleDeckConfigScreen extends StatefulWidget {
@@ -98,9 +99,12 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
         // SingleChildScrollView allows scrolling when keyboard appears
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
+        child: Center(  // Center the content horizontally
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600), // Limit max width on large screens
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,  // Align children to the left
             children: [
               // Section title
@@ -189,26 +193,20 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
               ),
 
               // Start button at the bottom
-              SizedBox(
-                width: double.infinity,
+              CustomElevatedButton(
                 height: 56,
-                child: ElevatedButton(
-                  onPressed: _startSession,
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Start Training',
-                    style: TextStyle(fontSize: 18),
-                  ),
+                onPressed: _startSession,
+                child: const Text(
+                  'Start Training',
+                  style: TextStyle(fontSize: 18),
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+          ), // Column
+        ), // SingleChildScrollView
+      ), // ConstrainedBox
+    ), // Center
+  ) // SafeArea
+); // Scaffold
+  }  // Closes the build() method
+}    // Closes the _SingleDeckConfigScreenState class

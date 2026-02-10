@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'memorization_screen.dart';  // Import the memorization screen
+import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
 
 class MultiDeckConfigScreen extends StatefulWidget {
   const MultiDeckConfigScreen({super.key});
@@ -98,9 +99,12 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
         // SingleChildScrollView allows scrolling when keyboard appears
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
+        child: Center(  // Center the content horizontally
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600), // Limit max width on large screens
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // SECTION 1: Number of decks
@@ -218,26 +222,20 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
               const SizedBox(height: 16),
 
               // Start button
-              SizedBox(
-                width: double.infinity,
+              CustomElevatedButton(
                 height: 56,
-                child: ElevatedButton(
-                  onPressed: _startSession,
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Start Training',
-                    style: TextStyle(fontSize: 18),
-                  ),
+                onPressed: _startSession,
+                child: const Text(
+                  'Start Training',
+                  style: TextStyle(fontSize: 18),
                 ),
               ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+          ), // Column
+        ), // SingleChildScrollView
+      ), // ConstrainedBox
+    ), // Center
+  ) // SafeArea
+); // Scaffold
+  }  // Closes the build() method
+}    // Closes the _MultiDeckConfigScreenState class
