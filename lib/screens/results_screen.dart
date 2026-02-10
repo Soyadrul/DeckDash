@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import '../models/card_model.dart';
+import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
 
 class ResultsScreen extends StatelessWidget {
   // The correct cards in their actual order
@@ -71,8 +72,14 @@ class ResultsScreen extends StatelessWidget {
   int _getCardsPerRow(double screenWidth) {
     // Adjusted breakpoints to be more conservative
     // This prevents trying to fit too many cards on smaller screens
-    if (screenWidth >= 900) return 4;   // Very wide screens: 4 cards per row
-    if (screenWidth >= 600) return 3;   // Medium/tablet screens: 3 cards per row
+    if (screenWidth >= 2000) return 10; // Ultra-wide screens: 10 cards per row
+    if (screenWidth >= 1800) return 9;  // Very wide screens: 9 cards per row
+    if (screenWidth >= 1600) return 8;  // Very wide screens: 8 cards per row
+    if (screenWidth >= 1400) return 7;  // Very wide screens: 7 cards per row
+    if (screenWidth >= 1200) return 6;  // Very wide screens: 6 cards per row
+    if (screenWidth >= 1000) return 5;  // Wide screens: 5 cards per row
+    if (screenWidth >= 800) return 4;   // Medium-wide screens: 4 cards per row
+    if (screenWidth >= 600) return 3;   // Tablet screens: 3 cards per row
     return 2;                           // Phone screens: 2 cards per row
   }
 
@@ -252,23 +259,15 @@ class ResultsScreen extends StatelessWidget {
                       top: 0.0,
                       bottom: 16.0,
                     ),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () {
-                          // Pop all screens until we reach the home screen
-                          Navigator.of(context).popUntil((route) => route.isFirst);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          'Return to Home',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                    child: CustomOutlinedButton(
+                      height: 56,
+                      onPressed: () {
+                        // Pop all screens until we reach the home screen
+                        Navigator.of(context).popUntil((route) => route.isFirst);
+                      },
+                      child: const Text(
+                        'Return to Home',
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
                   ),
