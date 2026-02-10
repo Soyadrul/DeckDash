@@ -206,9 +206,19 @@ jobs:
           # Add the build tools to PATH
           echo "$ANDROID_HOME/build-tools/$LATEST_BUILD_TOOLS" >> $GITHUB_PATH
 
+          # Refresh the PATH environment for the current shell
+          export PATH="$PATH:$ANDROID_HOME/build-tools/$LATEST_BUILD_TOOLS"
+
           # Verify apksigner is available
-          which apksigner
-          apksigner --version
+          if command -v apksigner &> /dev/null; then
+            echo "apksigner found at: $(which apksigner)"
+            apksigner --version
+          else
+            echo "ERROR: apksigner not found in $ANDROID_HOME/build-tools/$LATEST_BUILD_TOOLS"
+            echo "Contents of $ANDROID_HOME/build-tools/$LATEST_BUILD_TOOLS:"
+            ls -la $ANDROID_HOME/build-tools/$LATEST_BUILD_TOOLS/
+            exit 1
+          fi
         else
           echo "Build tools directory is empty or doesn't exist. Installing build tools..."
           
@@ -218,9 +228,19 @@ jobs:
           # Add the specific build tools version to PATH
           echo "$ANDROID_HOME/build-tools/34.0.0" >> $GITHUB_PATH
           
+          # Refresh the PATH environment for the current shell
+          export PATH="$PATH:$ANDROID_HOME/build-tools/34.0.0"
+
           # Verify apksigner is available
-          which apksigner
-          apksigner --version
+          if command -v apksigner &> /dev/null; then
+            echo "apksigner found at: $(which apksigner)"
+            apksigner --version
+          else
+            echo "ERROR: apksigner not found in $ANDROID_HOME/build-tools/34.0.0"
+            echo "Contents of $ANDROID_HOME/build-tools/34.0.0:"
+            ls -la $ANDROID_HOME/build-tools/34.0.0/
+            exit 1
+          fi
         fi
 
     # -------------------------------------------------------------------------
