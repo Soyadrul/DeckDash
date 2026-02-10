@@ -194,16 +194,34 @@ jobs:
     - name: Install Android build tools (Android only)
       if: matrix.target == 'android'
       run: |
-        # Find the latest build tools version
-        LATEST_BUILD_TOOLS=$(ls -1 $ANDROID_HOME/build-tools/ | sort -V | tail -n 1)
-        echo "Latest build tools version: $LATEST_BUILD_TOOLS"
+        # List available build tools to debug the issue
+        echo "Listing available build tools directories:"
+        ls -la $ANDROID_HOME/build-tools/ || echo "Build tools directory does not exist or is empty"
         
-        # Add the build tools to PATH
-        echo "$ANDROID_HOME/build-tools/$LATEST_BUILD_TOOLS" >> $GITHUB_PATH
-        
-        # Verify apksigner is available
-        which apksigner
-        apksigner --version
+        # Find the latest build tools version (with error checking)
+        if [ -d "$ANDROID_HOME/build-tools" ] && [ "$(ls -A $ANDROID_HOME/build-tools/)" ]; then
+          LATEST_BUILD_TOOLS=$(ls -1 $ANDROID_HOME/build-tools/ | sort -V | tail -n 1)
+          echo "Latest build tools version: $LATEST_BUILD_TOOLS"
+
+          # Add the build tools to PATH
+          echo "$ANDROID_HOME/build-tools/$LATEST_BUILD_TOOLS" >> $GITHUB_PATH
+
+          # Verify apksigner is available
+          which apksigner
+          apksigner --version
+        else
+          echo "Build tools directory is empty or doesn't exist. Installing build tools..."
+          
+          # Install Android SDK build tools using sdkmanager
+          echo "y" | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "build-tools;34.0.0"
+          
+          # Add the specific build tools version to PATH
+          echo "$ANDROID_HOME/build-tools/34.0.0" >> $GITHUB_PATH
+          
+          # Verify apksigner is available
+          which apksigner
+          apksigner --version
+        fi
 
     # -------------------------------------------------------------------------
     # Step 3: Install Linux system dependencies

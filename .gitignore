@@ -46,3 +46,6 @@ app.*.map.json
 
 # qwen-code
 QWEN.md
+
+.qwen/
+gha-creds-*.json
