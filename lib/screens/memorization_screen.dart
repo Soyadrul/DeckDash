@@ -207,9 +207,23 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
       child: Scaffold(
         appBar: AppBar(
           // FIXED: Show proper card count format
-          title: _isCompleted 
-              ? const Text('Memorization Complete')
-              : Text(_buildCardCountText(firstCardIndex, lastCardIndex)),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _isCompleted
+                  ? const Text('Memorization Complete')
+                  : Text(_buildCardCountText(firstCardIndex, lastCardIndex)),
+              if (!_isCompleted)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: LinearProgressIndicator(
+                    value: (_currentGroupIndex + 1) / totalGroups,
+                    minHeight: 4,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+            ],
+          ),
         ),
         body: SafeArea(
           child: Stack(
@@ -231,17 +245,7 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            if (!_isCompleted)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                                child: LinearProgressIndicator(
-                                  value: (_currentGroupIndex + 1) / totalGroups,
-                                  minHeight: 8,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                              ),
-
-                        if (!_isCompleted) const SizedBox(height: 48),
+                            if (!_isCompleted) const SizedBox(height: 48),
 
                         if (!_isCompleted) _buildCardsDisplay(currentCards),
                         
