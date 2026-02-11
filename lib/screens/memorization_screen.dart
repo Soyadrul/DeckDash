@@ -9,6 +9,7 @@ import 'dart:math';
 import '../models/card_model.dart';
 import '../models/app_settings.dart';
 import '../widgets/memorization_timer.dart';
+import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
 import 'recall_screen.dart';
 
 class MemorizationScreen extends StatefulWidget {
@@ -206,35 +207,45 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
       child: Scaffold(
         appBar: AppBar(
           // FIXED: Show proper card count format
-          title: _isCompleted 
-              ? const Text('Memorization Complete')
-              : Text(_buildCardCountText(firstCardIndex, lastCardIndex)),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _isCompleted
+                  ? const Text('Memorization Complete')
+                  : Text(_buildCardCountText(firstCardIndex, lastCardIndex)),
+              if (!_isCompleted)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: LinearProgressIndicator(
+                    value: (_currentGroupIndex + 1) / totalGroups,
+                    minHeight: 4,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+            ],
+          ),
         ),
         body: SafeArea(
           child: Stack(
             children: [
-              SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: MediaQuery.of(context).size.height -
-                          MediaQuery.of(context).padding.top -
-                          MediaQuery.of(context).padding.bottom -
-                          kToolbarHeight -
-                          48,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (!_isCompleted)
-                          LinearProgressIndicator(
-                            value: (_currentGroupIndex + 1) / totalGroups,
-                            minHeight: 8,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-
-                        if (!_isCompleted) const SizedBox(height: 48),
+              Center(  // Center the content horizontally
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600), // Limit max width on large screens
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: MediaQuery.of(context).size.height -
+                              MediaQuery.of(context).padding.top -
+                              MediaQuery.of(context).padding.bottom -
+                              kToolbarHeight -
+                              48,
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (!_isCompleted) const SizedBox(height: 48),
 
                         if (!_isCompleted) _buildCardsDisplay(currentCards),
                         
@@ -296,28 +307,18 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              ElevatedButton.icon(
+                              CustomElevatedButtonIcon(
+                                height: 56,
                                 onPressed: _currentGroupIndex > 0 ? _previousGroup : null,
                                 icon: const Icon(Icons.arrow_back),
                                 label: const Text('Previous'),
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 16,
-                                  ),
-                                ),
                               ),
 
-                              ElevatedButton.icon(
+                              CustomElevatedButtonIcon(
+                                height: 56,
                                 onPressed: _nextGroup,
                                 icon: const Icon(Icons.arrow_forward),
                                 label: const Text('Next'),
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 24,
-                                    vertical: 16,
-                                  ),
-                                ),
                               ),
                             ],
                           ),
@@ -337,28 +338,22 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 32),
-                          SizedBox(
-                            width: double.infinity,
+                          CustomElevatedButton(
                             height: 56,
-                            child: ElevatedButton(
-                              onPressed: _startRecall,
-                              style: ElevatedButton.styleFrom(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'Start Recall',
-                                style: TextStyle(fontSize: 18),
-                              ),
+                            onPressed: _startRecall,
+                            child: const Text(
+                              'Start Recall',
+                              style: TextStyle(fontSize: 18),
                             ),
                           ),
                         ],
                       ],
-                    ),
-                  ),
-                ),
-              ),
+                    ),       // Closes Column(...)
+                  ),         // Closes inner ConstrainedBox (line 222)
+                ),           // Closes Padding(...)
+              ),             // Closes SingleChildScrollView(...)
+            ),               // Closes outer ConstrainedBox (line 217)
+          ),                 // Closes Center(...)
               
               // FIXED: Timer is now always in the widget tree, just hidden with Opacity
               // This ensures it keeps running even when not visible
@@ -428,11 +423,11 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                     ),
                   ),
                 ),
-            ],
-          ),
-        ),
-      ),
-    );
+            ],              // End of Stack's children list
+          ),                // Closes Stack(...)
+        ),                  // Closes SafeArea(... body: SafeArea(...) ...)
+      ),                    // Closes Scaffold(... child: Scaffold(...) ...)
+    );                      // Closes WillPopScope and ends the return statement
   }
 
   /// FIXED: Builds proper card count text

@@ -130,68 +130,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // CATEGORY 1: APPEARANCE
-                _buildCategoryHeader(
-                  icon: Icons.palette,
-                  title: 'Appearance',
-                  subtitle: 'Customize how the app looks',
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600), // Limit max width on large screens
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // CATEGORY 1: APPEARANCE
+                    _buildCategoryHeader(
+                      icon: Icons.palette,
+                      title: 'Appearance',
+                      subtitle: 'Customize how the app looks',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildThemeCard(),
+
+                    const SizedBox(height: 32),
+
+                    // CATEGORY 2: TRAINING
+                    _buildCategoryHeader(
+                      icon: Icons.fitness_center,
+                      title: 'Training',
+                      subtitle: 'Configure your training experience',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildTimerCard(),
+                    const SizedBox(height: 12),
+                    _buildCardsDisplayCard(),
+
+                    const SizedBox(height: 32),
+
+                    // CATEGORY 3: BEHAVIOR
+                    _buildCategoryHeader(
+                      icon: Icons.touch_app,
+                      title: 'Behavior',
+                      subtitle: 'Control app interactions',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildBackConfirmationCard(),
+
+                    const SizedBox(height: 32),
+
+                    // CATEGORY 4: LANGUAGE
+                    _buildCategoryHeader(
+                      icon: Icons.language,
+                      title: 'Language',
+                      subtitle: 'Choose your preferred language',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildLanguageCard(),
+
+                    const SizedBox(height: 32),
+
+                    // CATEGORY 5: ABOUT
+                    _buildCategoryHeader(
+                      icon: Icons.info,
+                      title: 'About',
+                      subtitle: 'App information',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildAboutCard(),
+
+                    const SizedBox(height: 16),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                _buildThemeCard(),
-                
-                const SizedBox(height: 32),
-                
-                // CATEGORY 2: TRAINING
-                _buildCategoryHeader(
-                  icon: Icons.fitness_center,
-                  title: 'Training',
-                  subtitle: 'Configure your training experience',
-                ),
-                const SizedBox(height: 12),
-                _buildTimerCard(),
-                const SizedBox(height: 12),
-                _buildCardsDisplayCard(),
-                
-                const SizedBox(height: 32),
-                
-                // CATEGORY 3: BEHAVIOR
-                _buildCategoryHeader(
-                  icon: Icons.touch_app,
-                  title: 'Behavior',
-                  subtitle: 'Control app interactions',
-                ),
-                const SizedBox(height: 12),
-                _buildBackConfirmationCard(),
-                
-                const SizedBox(height: 32),
-                
-                // CATEGORY 4: LANGUAGE
-                _buildCategoryHeader(
-                  icon: Icons.language,
-                  title: 'Language',
-                  subtitle: 'Choose your preferred language',
-                ),
-                const SizedBox(height: 12),
-                _buildLanguageCard(),
-                
-                const SizedBox(height: 32),
-                
-                // CATEGORY 5: ABOUT
-                _buildCategoryHeader(
-                  icon: Icons.info,
-                  title: 'About',
-                  subtitle: 'App information',
-                ),
-                const SizedBox(height: 12),
-                _buildAboutCard(),
-                
-                const SizedBox(height: 16),
-              ],
+              ),
             ),
           ),
         ),

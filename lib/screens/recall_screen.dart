@@ -6,6 +6,7 @@ import '../models/card_model.dart';
 import '../models/app_settings.dart';
 import '../widgets/card_selector_dropdown.dart';
 import '../widgets/recall_countdown_timer.dart';
+import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
 import 'results_screen.dart';
 
 class RecallScreen extends StatefulWidget {
@@ -53,9 +54,15 @@ class _RecallScreenState extends State<RecallScreen> {
   }
 
   int _getCardsPerRow(double screenWidth) {
-    if (screenWidth >= 900) return 4;
-    if (screenWidth >= 600) return 3;
-    return 2;
+    if (screenWidth >= 2000) return 10; // Ultra-wide screens: 10 cards per row
+    if (screenWidth >= 1800) return 9;  // Very wide screens: 9 cards per row
+    if (screenWidth >= 1600) return 8;  // Very wide screens: 8 cards per row
+    if (screenWidth >= 1400) return 7;  // Very wide screens: 7 cards per row
+    if (screenWidth >= 1200) return 6;  // Very wide screens: 6 cards per row
+    if (screenWidth >= 1000) return 5;  // Wide screens: 5 cards per row
+    if (screenWidth >= 800) return 4;   // Medium-wide screens: 4 cards per row
+    if (screenWidth >= 600) return 3;   // Tablet screens: 3 cards per row
+    return 2;                           // Phone screens: 2 cards per row
   }
 
   double _getCardWidth(double availableWidth, int cardsPerRow) {
@@ -234,22 +241,12 @@ class _RecallScreenState extends State<RecallScreen> {
                             top: 0.0,
                             bottom: 16.0,
                           ),
-                          child: SizedBox(
-                            width: double.infinity,
+                          child: CustomElevatedButton(
                             height: 56,
-                            child: ElevatedButton(
-                              onPressed: _confirmFinish,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: const Text(
-                                'Finish Recall',
-                                style: TextStyle(fontSize: 18),
-                              ),
+                            onPressed: _confirmFinish,
+                            child: const Text(
+                              'Finish Recall',
+                              style: TextStyle(fontSize: 18),
                             ),
                           ),
                         ),
