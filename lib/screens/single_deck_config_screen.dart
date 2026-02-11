@@ -192,13 +192,16 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
                 height: MediaQuery.of(context).size.height * 0.1,
               ),
 
-              // Start button at the bottom
-              CustomElevatedButton(
-                height: 56,
-                onPressed: _startSession,
-                child: const Text(
-                  'Start Training',
-                  style: TextStyle(fontSize: 18),
+              // Start button at the bottom, centered horizontally
+              Align(
+                alignment: Alignment.center,
+                child: CustomElevatedButton(
+                  height: 56,
+                  onPressed: _startSession,
+                  child: const Text(
+                    'Start Training',
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
               ),
             ],

@@ -138,6 +138,8 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
                       _errorMessage = null;
                     });
                   }
+                  // Force a rebuild to update the total cards display
+                  setState(() {});
                 },
               ),
 
@@ -221,13 +223,16 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
 
               const SizedBox(height: 16),
 
-              // Start button
-              CustomElevatedButton(
-                height: 56,
-                onPressed: _startSession,
-                child: const Text(
-                  'Start Training',
-                  style: TextStyle(fontSize: 18),
+              // Start button, centered horizontally
+              Align(
+                alignment: Alignment.center,
+                child: CustomElevatedButton(
+                  height: 56,
+                  onPressed: _startSession,
+                  child: const Text(
+                    'Start Training',
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
               ),
             ],
