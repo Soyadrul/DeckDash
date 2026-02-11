@@ -26,7 +26,7 @@ class CustomElevatedButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          minimumSize: Size(width ?? 200, height!), // Minimum size but fits content
+          minimumSize: width != null ? Size(width!, height!) : null, // Allow content-based sizing
           padding: padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: shape ?? RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12), // Rounded corners
@@ -68,7 +68,7 @@ class CustomElevatedButtonIcon extends StatelessWidget {
         icon: icon,
         label: label,
         style: ElevatedButton.styleFrom(
-          minimumSize: Size(width ?? 200, height!), // Minimum size but fits content
+          minimumSize: width != null ? Size(width!, height!) : null, // Allow content-based sizing
           padding: padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: shape ?? RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12), // Rounded corners
@@ -105,7 +105,7 @@ class CustomOutlinedButton extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          minimumSize: Size(width ?? 200, height!), // Minimum size but fits content
+          minimumSize: width != null ? Size(width!, height!) : null, // Allow content-based sizing
           padding: padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: shape ?? RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12), // Rounded corners
