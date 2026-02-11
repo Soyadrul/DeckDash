@@ -107,8 +107,13 @@ class ResultsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Results'),
-        // Prevent going back (user should start fresh session from home)
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Navigate back to home screen
+            Navigator.of(context).popUntil((route) => route.isFirst);
+          },
+        ),
       ),
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
