@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math';
 import '../models/card_model.dart';
 import '../models/app_settings.dart';
+import '../utils/svg_font_size_util.dart';
 import '../widgets/memorization_timer.dart';
 import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
 import 'recall_screen.dart';
@@ -471,6 +472,10 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
 
   /// Builds a single card widget
   Widget _buildSingleCard(PlayingCard card) {
+    // Get the SVG font size settings
+    double cornerFontSize = _settings.svgCornerFontSize;
+    double centerFontSize = _settings.svgCenterFontSize;
+    
     return Container(
       width: 150,
       height: 210,
@@ -487,8 +492,10 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        child: SvgPicture.asset(
-          'assets/images/${card.imageName}',
+        child: SvgWithCustomFontSize(
+          assetPath: 'assets/images/${card.imageName}',
+          cornerFontSize: cornerFontSize,
+          centerFontSize: centerFontSize,
           fit: BoxFit.contain, // Changed from BoxFit.cover to BoxFit.contain to show the full card
           width: 150,
           height: 210,

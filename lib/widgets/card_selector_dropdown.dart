@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../models/card_model.dart';
+import '../models/app_settings.dart';
+import '../utils/svg_font_size_util.dart';
 
 class CardSelectorDropdown extends StatefulWidget {
   // The position index of this card in the sequence
@@ -68,8 +70,10 @@ class _CardSelectorDropdownState extends State<CardSelectorDropdown> {
                 child: Container(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: SvgPicture.asset(
-                      'assets/images/${widget.selectedCard!.imageName}',
+                    child: SvgWithCustomFontSize(
+                      assetPath: 'assets/images/${widget.selectedCard!.imageName}',
+                      cornerFontSize: AppSettings().svgCornerFontSize,
+                      centerFontSize: AppSettings().svgCenterFontSize,
                       fit: BoxFit.contain, // Changed from BoxFit.cover to BoxFit.contain to show the full card
                     ),
                   ),
@@ -184,8 +188,10 @@ class _CardSelectorDropdownState extends State<CardSelectorDropdown> {
                                 child: Container(
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(4),
-                                    child: SvgPicture.asset(
-                                      'assets/images/${card.imageName}',
+                                    child: SvgWithCustomFontSize(
+                                      assetPath: 'assets/images/${card.imageName}',
+                                      cornerFontSize: AppSettings().svgCornerFontSize,
+                                      centerFontSize: AppSettings().svgCenterFontSize,
                                       fit: BoxFit.contain, // Changed from BoxFit.cover to BoxFit.contain to show the full card
                                     ),
                                   ),

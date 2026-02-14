@@ -46,12 +46,20 @@ class AppSettings {
   // App language code (e.g., 'en' for English, 'es' for Spanish)
   String _languageCode = 'en';
 
+  // SVG CARD FONT SIZES
+  // Font size for corner text elements in SVG card images (in em units)
+  double _svgCornerFontSize = 0.5;
+  // Font size for center symbol in SVG card images (in em units)
+  double _svgCenterFontSize = 1.0;
+
   // Getters - allow other parts of the app to read settings
   ThemeMode get themeMode => _themeMode;
   bool get showMemorizationTimer => _showMemorizationTimer;
   CardsDisplayMode get cardsDisplayMode => _cardsDisplayMode;
   bool get enableBackConfirmation => _enableBackConfirmation;
   String get languageCode => _languageCode;
+  double get svgCornerFontSize => _svgCornerFontSize;
+  double get svgCenterFontSize => _svgCenterFontSize;
 
   /// Loads saved settings from device storage
   /// Called when the app starts to restore user preferences
@@ -75,6 +83,11 @@ class AppSettings {
     
     // Load language code (default to English)
     _languageCode = prefs.getString('languageCode') ?? 'en';
+
+    // Load SVG corner font size (default to 0.5)
+    _svgCornerFontSize = prefs.getDouble('svgCornerFontSize') ?? 0.5;
+    // Load SVG center font size (default to 1.0)
+    _svgCenterFontSize = prefs.getDouble('svgCenterFontSize') ?? 1.0;
   }
 
   /// Saves the current theme mode preference
@@ -115,6 +128,22 @@ class AppSettings {
     _languageCode = code;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('languageCode', code);
+  }
+
+  /// Saves the SVG corner font size preference
+  /// @param fontSize The font size for corner text elements in SVG card images (in em units)
+  Future<void> setSvgCornerFontSize(double fontSize) async {
+    _svgCornerFontSize = fontSize;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('svgCornerFontSize', fontSize);
+  }
+
+  /// Saves the SVG center font size preference
+  /// @param fontSize The font size for center symbol in SVG card images (in em units)
+  Future<void> setSvgCenterFontSize(double fontSize) async {
+    _svgCenterFontSize = fontSize;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('svgCenterFontSize', fontSize);
   }
 
   /// Converts ThemeMode enum to a string for storage

@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../models/card_model.dart';
+import '../models/app_settings.dart';
+import '../utils/svg_font_size_util.dart';
 import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
 
 class ResultsScreen extends StatelessWidget {
@@ -407,8 +409,10 @@ class ResultsScreen extends StatelessWidget {
               child: Container(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: SvgPicture.asset(
-                    'assets/images/${card.imageName}',
+                  child: SvgWithCustomFontSize(
+                    assetPath: 'assets/images/${card.imageName}',
+                    cornerFontSize: AppSettings().svgCornerFontSize,
+                    centerFontSize: AppSettings().svgCenterFontSize,
                     fit: BoxFit.contain, // Changed to contain to ensure the full card is visible
                   ),
                 ),

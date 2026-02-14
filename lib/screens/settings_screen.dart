@@ -31,6 +31,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _appVersion = 'Loading...';
   String _buildNumber = '';
 
+  // Variables to track SVG font sizes
+  late double _svgCornerFontSize;
+  late double _svgCenterFontSize;
+
   @override
   void initState() {
     super.initState();
@@ -40,7 +44,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _cardsDisplayMode = _settings.cardsDisplayMode;
     _enableBackConfirmation = _settings.enableBackConfirmation;
     _selectedLanguage = _settings.languageCode;
-    
+    _svgCornerFontSize = _settings.svgCornerFontSize;
+    _svgCenterFontSize = _settings.svgCenterFontSize;
+
     // Load app version information
     _loadAppVersion();
   }
@@ -110,7 +116,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _selectedLanguage = languageCode;
     });
     await _settings.setLanguageCode(languageCode);
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -119,6 +125,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
     }
+  }
+
+  /// Updates the SVG corner font size setting
+  Future<void> _updateSvgCornerFontSize(double fontSize) async {
+    setState(() {
+      _svgCornerFontSize = fontSize;
+    });
+    await _settings.setSvgCornerFontSize(fontSize);
+  }
+
+  /// Updates the SVG center font size setting
+  Future<void> _updateSvgCenterFontSize(double fontSize) async {
+    setState(() {
+      _svgCenterFontSize = fontSize;
+    });
+    await _settings.setSvgCenterFontSize(fontSize);
   }
 
   @override
@@ -149,7 +171,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     const SizedBox(height: 32),
 
-                    // CATEGORY 2: TRAINING
+                    // CATEGORY 2: CARD APPEARANCE
+                    _buildCategoryHeader(
+                      icon: Icons.card_membership,
+                      title: 'Card Appearance',
+                      subtitle: 'Customize how cards appear',
+                    ),
+                    const SizedBox(height: 12),
+                    _buildSvgFontSizeCard(),
+
+                    const SizedBox(height: 32),
+
+                    // CATEGORY 3: TRAINING
                     _buildCategoryHeader(
                       icon: Icons.fitness_center,
                       title: 'Training',
@@ -162,7 +195,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     const SizedBox(height: 32),
 
-                    // CATEGORY 3: BEHAVIOR
+                    // CATEGORY 4: BEHAVIOR
                     _buildCategoryHeader(
                       icon: Icons.touch_app,
                       title: 'Behavior',
@@ -173,7 +206,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     const SizedBox(height: 32),
 
-                    // CATEGORY 4: LANGUAGE
+                    // CATEGORY 5: LANGUAGE
                     _buildCategoryHeader(
                       icon: Icons.language,
                       title: 'Language',
@@ -184,7 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                     const SizedBox(height: 32),
 
-                    // CATEGORY 5: ABOUT
+                    // CATEGORY 6: ABOUT
                     _buildCategoryHeader(
                       icon: Icons.info,
                       title: 'About',
@@ -539,7 +572,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            
+
             // UPDATED: Version now shows dynamically from pubspec.yaml
             Text(
               //'Version $_appVersion${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
@@ -553,6 +586,131 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const Text(
               'A Flutter-based training app for Speed Card memorization',
               style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds the SVG font size card
+  Widget _buildSvgFontSizeCard() {
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.text_fields,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'SVG Card Font Sizes',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Adjust the font sizes of text elements in card images (in em units)',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Corner text font size slider
+            const Text(
+              'Corner Text Size',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Slider(
+              value: _svgCornerFontSize,
+              min: 0.2,
+              max: 1.5,
+              divisions: 26, // 0.05 increments between 0.2 and 1.5
+              label: '${_svgCornerFontSize.toStringAsFixed(2)} em',
+              onChanged: (double value) {
+                _updateSvgCornerFontSize(value);
+              },
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Smaller',
+                  style: TextStyle(fontSize: 12),
+                ),
+                Text(
+                  '${_svgCornerFontSize.toStringAsFixed(2)} em',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Text(
+                  'Larger',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Center symbol font size slider
+            const Text(
+              'Center Symbol Size',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Slider(
+              value: _svgCenterFontSize,
+              min: 0.5,
+              max: 2.0,
+              divisions: 30, // 0.05 increments between 0.5 and 2.0
+              label: '${_svgCenterFontSize.toStringAsFixed(2)} em',
+              onChanged: (double value) {
+                _updateSvgCenterFontSize(value);
+              },
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Smaller',
+                  style: TextStyle(fontSize: 12),
+                ),
+                Text(
+                  '${_svgCenterFontSize.toStringAsFixed(2)} em',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const Text(
+                  'Larger',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ],
             ),
           ],
         ),
