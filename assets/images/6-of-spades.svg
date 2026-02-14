@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140">
+  <!-- Card background -->
+  <rect x="5" y="5" rx="10" ry="10" width="90" height="130" fill="white" stroke="#ccc" stroke-width="2"/>
+  
+  <!-- Top left corner -->
+  <text x="15" y="25" font-family="Arial" font-size="20" fill="black">6♠</text>
+  
+  <!-- Center symbol -->
+  <text x="42" y="80" font-family="Arial" font-size="40" fill="black" text-anchor="middle">♠</text>
+  
+  <!-- Bottom right corner (rotated) -->
+  <g transform="rotate(180, 50, 70)">
+    <text x="15" y="25" font-family="Arial" font-size="20" fill="black">6♠</text>
+  </g>
+</svg>

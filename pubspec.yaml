@@ -86,10 +86,9 @@ flutter:
   #   - images/a_dot_ham.jpeg
 
   # Asset configuration
-  # Uncomment the following lines when you add your card images
   # All SVG files in the assets/images/ folder will be available to the app
-  # assets:
-  #   - assets/images/
+  assets:
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
