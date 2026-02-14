@@ -6,7 +6,7 @@
   <text x="15" y="25" font-family="Arial" font-size="20" fill="red">J♦</text>
   
   <!-- Center symbol -->
-  <text x="42" y="80" font-family="Arial" font-size="40" fill="red" text-anchor="middle">♦</text>
+  <text x="50" y="80" font-family="Arial" font-size="40" fill="red" text-anchor="middle">♦</text>
   
   <!-- Bottom right corner (rotated) -->
   <g transform="rotate(180, 50, 70)">
