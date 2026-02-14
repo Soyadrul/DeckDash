@@ -3,6 +3,7 @@
 // When tapped, opens a dialog showing all 52 cards to choose from
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../models/card_model.dart';
 
 class CardSelectorDropdown extends StatefulWidget {
@@ -44,7 +45,6 @@ class _CardSelectorDropdownState extends State<CardSelectorDropdown> {
       // When tapped, show the card picker dialog
       onTap: () => _showCardPicker(context),
       child: Container(
-        height: 100,
         decoration: BoxDecoration(
           // Blue background if card selected, grey if not
           color: widget.selectedCard != null
@@ -62,33 +62,43 @@ class _CardSelectorDropdownState extends State<CardSelectorDropdown> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (widget.selectedCard != null) ...[
-              // Show the selected card
-              // TODO: Replace with SVG when assets are available
-              Text(
-                widget.selectedCard!.displayName,
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  // Red for hearts/diamonds, black for clubs/spades
-                  color: (widget.selectedCard!.suit == '♥' ||
-                      widget.selectedCard!.suit == '♦')
-                      ? Colors.red
-                      : Colors.black,
+              // Show the selected card as SVG with adjusted size to fit container
+              AspectRatio(
+                aspectRatio: 0.7, // Standard card aspect ratio (width/height)
+                child: Container(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SvgPicture.asset(
+                      'assets/images/${widget.selectedCard!.imageName}',
+                      fit: BoxFit.contain, // Changed from BoxFit.cover to BoxFit.contain to show the full card
+                    ),
+                  ),
                 ),
               ),
             ] else ...[
               // Show placeholder when no card is selected
-              const Icon(
-                Icons.touch_app,
-                size: 32,
-                color: Colors.grey,
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Select',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
+              // Using AspectRatio to maintain consistent height with card view
+              AspectRatio(
+                aspectRatio: 0.7, // Same aspect ratio as card
+                child: Container(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.touch_app,
+                        size: 32,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Select',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -168,16 +178,17 @@ class _CardSelectorDropdownState extends State<CardSelectorDropdown> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Display card rank and suit
-                              // TODO: Replace with SVG when assets are available
-                              Text(
-                                card.displayName,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: (card.suit == '♥' || card.suit == '♦')
-                                      ? Colors.red
-                                      : Colors.black,
+                              // Display card as SVG without white background
+                              AspectRatio(
+                                aspectRatio: 0.7, // Standard card aspect ratio (width/height)
+                                child: Container(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: SvgPicture.asset(
+                                      'assets/images/${card.imageName}',
+                                      fit: BoxFit.contain, // Changed from BoxFit.cover to BoxFit.contain to show the full card
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],

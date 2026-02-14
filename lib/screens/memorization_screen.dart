@@ -5,6 +5,7 @@
 // FIXED: 3-card display now shows all 3 cards properly
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:math';
 import '../models/card_model.dart';
 import '../models/app_settings.dart';
@@ -484,29 +485,14 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
           ),
         ],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            card.displayName,
-            style: TextStyle(
-              fontSize: 56,
-              fontWeight: FontWeight.bold,
-              color: (card.suit == '♥' || card.suit == '♦')
-                  ? Colors.red
-                  : Colors.black,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Image: ${card.imageName}',
-            style: const TextStyle(
-              fontSize: 10,
-              color: Colors.grey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: SvgPicture.asset(
+          'assets/images/${card.imageName}',
+          fit: BoxFit.contain, // Changed from BoxFit.cover to BoxFit.contain to show the full card
+          width: 150,
+          height: 210,
+        ),
       ),
     );
   }

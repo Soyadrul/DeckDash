@@ -3,6 +3,7 @@
 // NOW WITH TIMING INFO: Shows memorization time and auto-submit notification
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../models/card_model.dart';
 import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
 
@@ -388,7 +389,6 @@ class ResultsScreen extends StatelessWidget {
     }
 
     return Container(
-      height: 100,
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(8),
@@ -401,31 +401,44 @@ class ResultsScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (card != null) ...[
-            // Display the card
-            Text(
-              card.displayName,
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: (card.suit == '♥' || card.suit == '♦')
-                    ? Colors.red
-                    : Colors.black,
+            // Display the card as SVG without white background
+            AspectRatio(
+              aspectRatio: 0.7, // Standard card aspect ratio (width/height)
+              child: Container(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SvgPicture.asset(
+                    'assets/images/${card.imageName}',
+                    fit: BoxFit.contain, // Changed to contain to ensure the full card is visible
+                  ),
+                ),
               ),
             ),
           ] else ...[
             // No card selected - show question mark
-            const Icon(
-              Icons.help_outline,
-              size: 32,
-              color: Colors.grey,
+            // Using AspectRatio to maintain consistent height with card view
+            AspectRatio(
+              aspectRatio: 0.7, // Same aspect ratio as card
+              child: Container(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.help_outline,
+                      size: 24, // Reduced size from 32 to 24
+                      color: Colors.grey,
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
-          const SizedBox(height: 4),
+          const SizedBox(height: 2), // Reduced height from 4 to 2
           // Label text
           Text(
             label,
             style: const TextStyle(
-              fontSize: 10,
+              fontSize: 8, // Reduced font size from 10 to 8
               color: Colors.grey,
             ),
           ),
