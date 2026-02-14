@@ -470,7 +470,29 @@ jobs:
     
     steps:
     # -------------------------------------------------------------------------
-    # Step 1: Download all build artifacts from build job
+    # Step 1: Validate version tag before proceeding
+    # -------------------------------------------------------------------------
+    # Ensures the version tag is properly formatted before creating a release
+    - name: Validate version tag
+      run: |
+        VERSION="${{ needs.check-trigger.outputs.version }}"
+        
+        if [[ "$VERSION" == "none" ]] || [[ -z "$VERSION" ]]; then
+          echo "ERROR: Invalid version tag: $VERSION"
+          echo "The version was not properly determined in the check-trigger job"
+          exit 1
+        fi
+        
+        # Basic validation - version should start with 'v' followed by numbers/dots
+        if [[ ! "$VERSION" =~ ^v[0-9]+\. ]]; then
+          echo "WARNING: Version tag doesn't follow standard semantic versioning: $VERSION"
+          echo "This might cause issues with the release process"
+        fi
+        
+        echo "Validated version tag: $VERSION"
+
+    # -------------------------------------------------------------------------
+    # Step 2: Download all build artifacts from build job
     # -------------------------------------------------------------------------
     # Retrieves all platform builds (Linux and Android)
     # Downloads to local artifacts/ directory
@@ -480,7 +502,7 @@ jobs:
         path: artifacts/  # Download all artifacts to this directory
 
     # -------------------------------------------------------------------------
-    # Step 2: Display artifact structure for debugging
+    # Step 3: Display artifact structure for debugging
     # -------------------------------------------------------------------------
     # Helps verify all builds were downloaded correctly
     - name: Display downloaded artifacts
@@ -492,12 +514,12 @@ jobs:
         du -h artifacts/*/*
 
     # -------------------------------------------------------------------------
-    # Step 3: Create draft GitHub release with all executables
+    # Step 4: Create draft GitHub release with all executables
     # -------------------------------------------------------------------------
     # Creates a draft release (not published) so you can review before publishing
     # Automatically generates release notes from commits since last release
     - name: Create Draft Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         # Use version number determined in check-trigger job
         tag_name: ${{ needs.check-trigger.outputs.version }}
@@ -600,7 +622,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     # -------------------------------------------------------------------------
-    # Step 4: Workflow completion message
+    # Step 5: Workflow completion message
     # -------------------------------------------------------------------------
     - name: Release created successfully
       run: |
