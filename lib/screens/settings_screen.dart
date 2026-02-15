@@ -568,8 +568,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // UPDATED: Version now shows dynamically from pubspec.yaml
             Text(
-              //'Version $_appVersion${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
-              'Version $_appVersion',
+              'Version $_appVersion${_buildNumber.isNotEmpty ? ' ($_buildNumber)' : ''}',
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
