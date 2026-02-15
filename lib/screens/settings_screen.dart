@@ -353,7 +353,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             RadioListTile<ThemeMode>(
               title: Text(t('system_theme')),
-              subtitle: Text(t('system_theme')),
               value: ThemeMode.system,
               groupValue: _selectedThemeMode,
               onChanged: (value) => value != null ? _updateThemeMode(value) : null,
@@ -361,7 +360,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             RadioListTile<ThemeMode>(
               title: Text(t('light_theme')),
-              subtitle: Text(t('light_theme')),
               value: ThemeMode.light,
               groupValue: _selectedThemeMode,
               onChanged: (value) => value != null ? _updateThemeMode(value) : null,
@@ -369,7 +367,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             RadioListTile<ThemeMode>(
               title: Text(t('dark_theme')),
-              subtitle: Text(t('dark_theme')),
               value: ThemeMode.dark,
               groupValue: _selectedThemeMode,
               onChanged: (value) => value != null ? _updateThemeMode(value) : null,

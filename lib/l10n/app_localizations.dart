@@ -26,8 +26,8 @@ class AppLocalizations {
       // Theme
       'theme_mode': 'Theme Mode',
       'system_theme': 'Follow device theme',
-      'light_theme': 'Always light theme',
-      'dark_theme': 'Always dark theme',
+      'light_theme': 'Light theme',
+      'dark_theme': 'Dark theme',
       
       // Timer
       'memorization_timer': 'Memorization Timer',
@@ -180,8 +180,8 @@ class AppLocalizations {
       // Theme
       'theme_mode': 'Modalità Tema',
       'system_theme': 'Segui il tema del dispositivo',
-      'light_theme': 'Tema chiaro sempre',
-      'dark_theme': 'Tema scuro sempre',
+      'light_theme': 'Tema chiaro',
+      'dark_theme': 'Tema scuro',
       
       // Timer
       'memorization_timer': 'Timer di Memorizzazione',
