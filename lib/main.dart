@@ -2,28 +2,28 @@
 /// When the app starts, Flutter calls the main() function
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/home_screen.dart';
 import 'models/app_settings.dart';
+import 'l10n/app_localizations.dart';
 
 /// The main function: the first thing that runs when the app starts
 /// Now includes settings initialization
 void main() async {
   // Required for async operations before runApp
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Load saved settings before starting the app
   // This ensures theme and preferences are applied immediately
   await AppSettings().loadSettings();
-  
+
   // runApp() takes a Widget and makes it the root of the widget tree
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 /// The root widget of the entire application
-/// Changed to StatefulWidget to support theme changes
+/// Changed to StatefulWidget to support theme and language changes
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
   @override
   State<MyApp> createState() => _MyAppState();
 
@@ -37,12 +37,27 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   // Get reference to settings singleton
   final AppSettings _settings = AppSettings();
+  Locale? _locale;
 
-  /// Called by settings screen to refresh theme
-  /// This rebuilds the entire app with new theme settings
+  @override
+  void initState() {
+    super.initState();
+    // Set the initial locale based on saved language setting
+    String languageCode = AppSettings().languageCode;
+    _locale = Locale(languageCode);
+  }
+
+  void updateLocale(String languageCode) {
+    setState(() {
+      _locale = Locale(languageCode);
+    });
+  }
+  
+  /// Called by settings screen to refresh theme and language
+  /// This rebuilds the entire app with new theme and language settings
   void updateTheme() {
     setState(() {
-      // setState triggers rebuild with new theme from settings
+      // setState triggers rebuild with new theme and language from settings
     });
   }
 
@@ -52,6 +67,20 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       // The title shown in the app switcher on mobile devices
       title: 'DeckDash',
+      
+      locale: _locale,
+      supportedLocales: [
+        Locale('en'), // English
+        Locale('it'), // Italian
+      ],
+      localizationsDelegates: [
+        // Custom localization delegate
+        _AppLocalizationDelegate(),
+        // Built-in localization for Material widgets
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
 
       // Light theme configuration using Material 3 design system
       theme: ThemeData(
@@ -89,4 +118,27 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
     );
   }
+}
+
+/// Localization Delegate to provide localized strings
+class _AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationDelegate();
+
+  @override
+  bool isSupported(Locale locale) {
+    return ['en', 'it'].contains(locale.languageCode);
+  }
+
+  @override
+  Future<AppLocalizations> load(Locale locale) async {
+    return AppLocalizations();
+  }
+
+  @override
+  bool shouldReload(_AppLocalizationDelegate old) => false;
+}
+
+/// Helper function to get localized strings
+String t(String key) {
+  return AppLocalizations.of(key, AppSettings().languageCode);
 }

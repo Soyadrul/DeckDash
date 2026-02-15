@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'memorization_screen.dart';  // Import the memorization screen
 import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
+import '../main.dart'; // Import the t() function for localization
 
 class MultiDeckConfigScreen extends StatefulWidget {
   const MultiDeckConfigScreen({super.key});
@@ -94,7 +95,7 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Multi Deck Configuration'),
+        title: Text(t('multi_deck_configuration')),
       ),
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
@@ -108,9 +109,9 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // SECTION 1: Number of decks
-              const Text(
-                'Number of decks',
-                style: TextStyle(
+              Text(
+                t('number_of_decks'),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -121,8 +122,8 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
               TextField(
                 controller: _deckCountController,
                 decoration: InputDecoration(
-                  labelText: 'Number of decks',
-                  helperText: 'Minimum 2, maximum 10',
+                  labelText: t('number_of_decks'),
+                  helperText: t('decks_range'),
                   errorText: _errorMessage,
                   border: const OutlineInputBorder(),
                   prefixIcon: const Icon(Icons.content_copy),
@@ -146,9 +147,9 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
               const SizedBox(height: 32),
 
               // SECTION 2: Shuffling mode
-              const Text(
-                'Shuffling mode',
-                style: TextStyle(
+              Text(
+                t('shuffling_mode'),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -158,8 +159,8 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
               // OPTION 1: Shuffle all cards together
               Card(
                 child: RadioListTile<bool>(
-                  title: const Text('Shuffle all cards together'),
-                  subtitle: const Text('All cards are shuffled as one big deck'),
+                  title: Text(t('shuffle_all_together')),
+                  subtitle: Text(t('all_cards_as_one_deck')),
                   value: false,  // This option means NOT shuffling separately
                   groupValue: _shuffleSeparately,
                   onChanged: (value) {
@@ -175,8 +176,8 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
               // OPTION 2: Shuffle each deck separately
               Card(
                 child: RadioListTile<bool>(
-                  title: const Text('Shuffle each deck separately'),
-                  subtitle: const Text('Each deck is shuffled individually, then combined'),
+                  title: Text(t('shuffle_separately')),
+                  subtitle: Text(t('each_deck_shuffled_individually')),
                   value: true,  // This option means shuffling separately
                   groupValue: _shuffleSeparately,
                   onChanged: (value) {
@@ -209,11 +210,11 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
                     Expanded(
                       child: Text(
                         // Calculate and display total cards
-                        'Total cards: ${(int.tryParse(_deckCountController.text) ?? 2) * 52}',
-                        style: TextStyle(
+                        '${t('total_cards')}: ${(int.tryParse(_deckCountController.text) ?? 2) * 52}',
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Colors.black54,
                         ),
                       ),
                     ),
@@ -229,9 +230,9 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
                 child: CustomElevatedButton(
                   height: 56,
                   onPressed: _startSession,
-                  child: const Text(
-                    'Start Training',
-                    style: TextStyle(fontSize: 18),
+                  child: Text(
+                    t('start_memorization'),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
               ),

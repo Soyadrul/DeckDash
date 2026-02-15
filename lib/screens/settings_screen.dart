@@ -118,9 +118,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await _settings.setLanguageCode(languageCode);
 
     if (mounted) {
+      // Update the app's locale and trigger a rebuild
+      MyApp.of(context)?.updateLocale(languageCode);
+      MyApp.of(context)?.updateTheme(); // This forces a rebuild of the entire app
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Language will update on next app restart'),
+        SnackBar(
+          content: Text(t('language_changed_successfully')),
           duration: Duration(seconds: 2),
         ),
       );
@@ -147,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(t('settings')),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -163,8 +167,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // CATEGORY 1: APPEARANCE
                     _buildCategoryHeader(
                       icon: Icons.palette,
-                      title: 'Appearance',
-                      subtitle: 'Customize how the app looks',
+                      title: t('appearance'),
+                      subtitle: t('customize_appearance'),
                     ),
                     const SizedBox(height: 12),
                     _buildThemeCard(),
@@ -174,8 +178,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // CATEGORY 2: CARD APPEARANCE
                     _buildCategoryHeader(
                       icon: Icons.card_membership,
-                      title: 'Card Appearance',
-                      subtitle: 'Customize how cards appear',
+                      title: t('card_appearance'),
+                      subtitle: t('customize_cards'),
                     ),
                     const SizedBox(height: 12),
                     _buildSvgFontSizeCard(),
@@ -185,8 +189,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // CATEGORY 3: TRAINING
                     _buildCategoryHeader(
                       icon: Icons.fitness_center,
-                      title: 'Training',
-                      subtitle: 'Configure your training experience',
+                      title: t('training'),
+                      subtitle: t('configure_training'),
                     ),
                     const SizedBox(height: 12),
                     _buildTimerCard(),
@@ -198,8 +202,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // CATEGORY 4: BEHAVIOR
                     _buildCategoryHeader(
                       icon: Icons.touch_app,
-                      title: 'Behavior',
-                      subtitle: 'Control app interactions',
+                      title: t('behavior'),
+                      subtitle: t('control_interactions'),
                     ),
                     const SizedBox(height: 12),
                     _buildBackConfirmationCard(),
@@ -209,8 +213,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // CATEGORY 5: LANGUAGE
                     _buildCategoryHeader(
                       icon: Icons.language,
-                      title: 'Language',
-                      subtitle: 'Choose your preferred language',
+                      title: t('language'),
+                      subtitle: t('choose_language'),
                     ),
                     const SizedBox(height: 12),
                     _buildLanguageCard(),
@@ -220,8 +224,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     // CATEGORY 6: ABOUT
                     _buildCategoryHeader(
                       icon: Icons.info,
-                      title: 'About',
-                      subtitle: 'App information',
+                      title: t('about'),
+                      subtitle: t('app_information'),
                     ),
                     const SizedBox(height: 12),
                     _buildAboutCard(),
@@ -300,9 +304,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   size: 20,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Theme Mode',
-                  style: TextStyle(
+                Text(
+                  t('theme_mode'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -310,26 +314,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            
+
             RadioListTile<ThemeMode>(
-              title: const Text('System'),
-              subtitle: const Text('Follow device theme'),
+              title: Text(t('system_theme')),
+              subtitle: Text(t('system_theme')),
               value: ThemeMode.system,
               groupValue: _selectedThemeMode,
               onChanged: (value) => value != null ? _updateThemeMode(value) : null,
             ),
-            
+
             RadioListTile<ThemeMode>(
-              title: const Text('Light'),
-              subtitle: const Text('Always light theme'),
+              title: Text(t('light_theme')),
+              subtitle: Text(t('light_theme')),
               value: ThemeMode.light,
               groupValue: _selectedThemeMode,
               onChanged: (value) => value != null ? _updateThemeMode(value) : null,
             ),
-            
+
             RadioListTile<ThemeMode>(
-              title: const Text('Dark'),
-              subtitle: const Text('Always dark theme'),
+              title: Text(t('dark_theme')),
+              subtitle: Text(t('dark_theme')),
               value: ThemeMode.dark,
               groupValue: _selectedThemeMode,
               onChanged: (value) => value != null ? _updateThemeMode(value) : null,
@@ -357,9 +361,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   size: 20,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Memorization Timer',
-                  style: TextStyle(
+                Text(
+                  t('memorization_timer'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -367,12 +371,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            
+
             SwitchListTile(
-              title: const Text('Show timer during memorization'),
-              subtitle: const Text(
-                'Timer tracks time but won\'t be visible if disabled',
-              ),
+              title: Text(t('show_timer')),
+              subtitle: Text(t('timer_subtitle')),
               value: _showTimer,
               onChanged: _updateShowTimer,
             ),
@@ -399,9 +401,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   size: 20,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Cards Display Mode',
-                  style: TextStyle(
+                Text(
+                  t('cards_display_mode'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -412,33 +414,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Padding(
               padding: const EdgeInsets.only(left: 32, top: 4, bottom: 8),
               child: Text(
-                'Choose how many cards to view at once during memorization',
+                t('choose_cards_display'),
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.grey.shade600,
                 ),
               ),
             ),
-            
+
             RadioListTile<CardsDisplayMode>(
-              title: const Text('1 card at a time'),
-              subtitle: const Text('View cards one by one (classic mode)'),
+              title: Text(t('one_card')),
+              subtitle: Text(t('one_card_subtitle')),
               value: CardsDisplayMode.single,
               groupValue: _cardsDisplayMode,
               onChanged: (value) => value != null ? _updateCardsDisplayMode(value) : null,
             ),
-            
+
             RadioListTile<CardsDisplayMode>(
-              title: const Text('2 cards at a time'),
-              subtitle: const Text('View cards in pairs'),
+              title: Text(t('two_cards')),
+              subtitle: Text(t('two_cards_subtitle')),
               value: CardsDisplayMode.pair,
               groupValue: _cardsDisplayMode,
               onChanged: (value) => value != null ? _updateCardsDisplayMode(value) : null,
             ),
-            
+
             RadioListTile<CardsDisplayMode>(
-              title: const Text('3 cards at a time'),
-              subtitle: const Text('View cards in groups of three'),
+              title: Text(t('three_cards')),
+              subtitle: Text(t('three_cards_subtitle')),
               value: CardsDisplayMode.triple,
               groupValue: _cardsDisplayMode,
               onChanged: (value) => value != null ? _updateCardsDisplayMode(value) : null,
@@ -466,9 +468,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   size: 20,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'Back Gesture Confirmation',
-                  style: TextStyle(
+                Text(
+                  t('back_gesture_confirmation'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -476,13 +478,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            
+
             SwitchListTile(
-              title: const Text('Require double-back to exit'),
-              subtitle: const Text(
-                'Prevents accidental exits during training. '
-                'Press back twice within 5 seconds to exit Memorization/Recall screens.',
-              ),
+              title: Text(t('double_back_exit')),
+              subtitle: Text(t('back_subtitle')),
               value: _enableBackConfirmation,
               onChanged: _updateBackConfirmation,
             ),
@@ -496,13 +495,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildLanguageCard() {
     final Map<String, String> languages = {
       'en': 'English',
-      'es': 'Español (Spanish)',
-      'fr': 'Français (French)',
-      'de': 'Deutsch (German)',
       'it': 'Italiano (Italian)',
-      'pt': 'Português (Portuguese)',
-      'ja': '日本語 (Japanese)',
-      'zh': '中文 (Chinese)',
     };
 
     return Card(
@@ -514,10 +507,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             DropdownButtonFormField<String>(
               value: _selectedLanguage,
-              decoration: const InputDecoration(
-                labelText: 'Select Language',
-                border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(
+              decoration: InputDecoration(
+                labelText: t('select_language'),
+                border: const OutlineInputBorder(),
+                contentPadding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 8,
                 ),
@@ -531,9 +524,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onChanged: (value) => value != null ? _updateLanguage(value) : null,
             ),
             const SizedBox(height: 8),
-            
+
             Text(
-              'Note: App restart required for language changes',
+              t('note_language_restart'),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey.shade600,
@@ -562,9 +555,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'DeckDash',
-                  style: TextStyle(
+                Text(
+                  t('app_name'),
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -583,9 +576,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'A Flutter-based training app for Speed Card memorization',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              t('app_description'),
+              style: const TextStyle(color: Colors.grey),
             ),
           ],
         ),
@@ -610,9 +603,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   size: 20,
                 ),
                 const SizedBox(width: 12),
-                const Text(
-                  'SVG Card Font Sizes',
-                  style: TextStyle(
+                Text(
+                  t('svg_card_font_sizes'),
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -621,18 +614,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Adjust the font sizes of text elements in card images (in em units)',
+              t('adjust_font_sizes'),
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade600,
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Corner text font size slider
-            const Text(
-              'Corner Text Size',
-              style: TextStyle(
+            Text(
+              t('corner_text_size'),
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -652,9 +645,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Smaller',
-                  style: TextStyle(fontSize: 12),
+                Text(
+                  t('smaller'),
+                  style: const TextStyle(fontSize: 12),
                 ),
                 Text(
                   '${_svgCornerFontSize.toStringAsFixed(2)} em',
@@ -663,19 +656,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const Text(
-                  'Larger',
-                  style: TextStyle(fontSize: 12),
+                Text(
+                  t('larger'),
+                  style: const TextStyle(fontSize: 12),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Center symbol font size slider
-            const Text(
-              'Center Symbol Size',
-              style: TextStyle(
+            Text(
+              t('center_symbol_size'),
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
@@ -695,9 +688,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Smaller',
-                  style: TextStyle(fontSize: 12),
+                Text(
+                  t('smaller'),
+                  style: const TextStyle(fontSize: 12),
                 ),
                 Text(
                   '${_svgCenterFontSize.toStringAsFixed(2)} em',
@@ -706,9 +699,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const Text(
-                  'Larger',
-                  style: TextStyle(fontSize: 12),
+                Text(
+                  t('larger'),
+                  style: const TextStyle(fontSize: 12),
                 ),
               ],
             ),

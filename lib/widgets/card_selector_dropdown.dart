@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../models/card_model.dart';
 import '../models/app_settings.dart';
 import '../utils/svg_font_size_util.dart';
+import '../main.dart'; // Import the t() function for localization
 
 class CardSelectorDropdown extends StatefulWidget {
   // The position index of this card in the sequence
@@ -94,9 +95,9 @@ class _CardSelectorDropdownState extends State<CardSelectorDropdown> {
                         color: Colors.grey,
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        'Select',
-                        style: TextStyle(
+                      Text(
+                        t('select'),
+                        style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
                         ),
@@ -130,7 +131,7 @@ class _CardSelectorDropdownState extends State<CardSelectorDropdown> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Select the card',
+                        t('select_card'),
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       IconButton(

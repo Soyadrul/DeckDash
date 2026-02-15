@@ -8,6 +8,7 @@ import '../models/card_model.dart';
 import '../models/app_settings.dart';
 import '../utils/svg_font_size_util.dart';
 import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
+import '../main.dart'; // Import the t() function for localization
 
 class ResultsScreen extends StatelessWidget {
   // The correct cards in their actual order
@@ -109,7 +110,7 @@ class ResultsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Results'),
+        title: Text(t('results')),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -149,16 +150,16 @@ class ResultsScreen extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.timer_off,
-                            color: Colors.orange.shade700,
+                            color: Colors.orange[700]!,
                             size: 24,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Time ran out! Your recall was automatically submitted.',
+                              t('time_ran_out_auto_submit'),
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.orange.shade700,
+                                color: Colors.orange[700]!,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -194,10 +195,10 @@ class ResultsScreen extends StatelessWidget {
                         const SizedBox(height: 4),
                         // Percentage: "86.5% correct"
                         Text(
-                          '${percentage.toStringAsFixed(1)}% correct',
-                          style: TextStyle(
+                          '${percentage.toStringAsFixed(1)}% ${t('correct')}',
+                          style: const TextStyle(
                             fontSize: 16,
-                            color: scoreColor,
+                            color: Colors.black54,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -229,10 +230,10 @@ class ResultsScreen extends StatelessWidget {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Memorization Time: ',
+                            '${t('memorization_time')}: ',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.blue.shade700,
+                              color: Colors.blue[700]!,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -240,7 +241,7 @@ class ResultsScreen extends StatelessWidget {
                             _formatMemorizationTime(memorizationTime),
                             style: TextStyle(
                               fontSize: 18,
-                              color: Colors.blue.shade900,
+                              color: Colors.blue[900]!,
                               fontWeight: FontWeight.bold,
                               fontFeatures: const [
                                 FontFeature.tabularFigures(), // Monospace numbers
@@ -273,9 +274,9 @@ class ResultsScreen extends StatelessWidget {
                         // Pop all screens until we reach the home screen
                         Navigator.of(context).popUntil((route) => route.isFirst);
                       },
-                      child: const Text(
-                        'Return to Home',
-                        style: TextStyle(fontSize: 16),
+                      child: Text(
+                        t('return_home'),
+                        style: const TextStyle(fontSize: 16),
                       ),
                     ),
                   ),
@@ -440,7 +441,7 @@ class ResultsScreen extends StatelessWidget {
           const SizedBox(height: 2), // Reduced height from 4 to 2
           // Label text
           Text(
-            label,
+            label == 'Your choice' ? t('your_choice') : t('correct_card'),
             style: const TextStyle(
               fontSize: 8, // Reduced font size from 10 to 8
               color: Colors.grey,

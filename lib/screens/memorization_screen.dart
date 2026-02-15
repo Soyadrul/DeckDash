@@ -13,6 +13,7 @@ import '../utils/svg_font_size_util.dart';
 import '../widgets/memorization_timer.dart';
 import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
 import 'recall_screen.dart';
+import '../main.dart'; // Import the t() function for localization
 
 class MemorizationScreen extends StatefulWidget {
   // Total number of cards to memorize
@@ -213,7 +214,7 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _isCompleted
-                  ? const Text('Memorization Complete')
+                  ? Text(t('memorization_complete'))
                   : Text(_buildCardCountText(firstCardIndex, lastCardIndex)),
               if (!_isCompleted)
                 Padding(
@@ -277,7 +278,7 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
-                                      'Memorization Time',
+                                      t('memorization_time'),
                                       style: TextStyle(
                                         fontSize: 16,
                                         color: Colors.blue.shade700,
@@ -292,7 +293,7 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                                   style: TextStyle(
                                     fontSize: 42,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.blue.shade900,
+                                    color: Colors.blue[900]!,
                                     fontFeatures: const [
                                       FontFeature.tabularFigures(),
                                     ],
@@ -313,39 +314,39 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                                 height: 56,
                                 onPressed: _currentGroupIndex > 0 ? _previousGroup : null,
                                 icon: const Icon(Icons.arrow_back),
-                                label: const Text('Previous'),
+                                label: Text(t('previous')),
                               ),
 
                               CustomElevatedButtonIcon(
                                 height: 56,
                                 onPressed: _nextGroup,
                                 icon: const Icon(Icons.arrow_forward),
-                                label: const Text('Next'),
+                                label: Text(t('next')),
                               ),
                             ],
                           ),
                         ] else ...[
-                          const Text(
-                            'You\'ve seen all the cards!',
-                            style: TextStyle(
+                          Text(
+                            t('seen_all_cards'),
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 16),
-                          const Text(
-                            'Ready for the recall phase?',
-                            style: TextStyle(fontSize: 16),
+                          Text(
+                            t('ready_for_recall'),
+                            style: const TextStyle(fontSize: 16),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 32),
                           CustomElevatedButton(
                             height: 56,
                             onPressed: _startRecall,
-                            child: const Text(
-                              'Start Recall',
-                              style: TextStyle(fontSize: 18),
+                            child: Text(
+                              t('start_recall'),
+                              style: const TextStyle(fontSize: 18),
                             ),
                           ),
                         ],
@@ -412,9 +413,9 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Press back again within 5 seconds to exit',
+                              t('press_back_again_to_exit'),
                               style: TextStyle(
-                                color: Colors.orange.shade900,
+                                color: Colors.orange[900]!,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 14,
                               ),
@@ -438,14 +439,14 @@ class _MemorizationScreenState extends State<MemorizationScreen> {
   String _buildCardCountText(int firstIndex, int lastIndex) {
     final first = firstIndex + 1;  // Convert from 0-based to 1-based
     final last = lastIndex;        // lastIndex is already the count
-    
+
     // If showing only one card, use singular format
     if (first == last) {
-      return 'Card $first of ${_shuffledCards.length}';
+      return '${t('card')} $first ${t('of')} ${_shuffledCards.length}';
     }
-    
+
     // If showing multiple cards, use range format
-    return 'Card $first-$last of ${_shuffledCards.length}';
+    return '${t('card')} $first-$last ${t('of')} ${_shuffledCards.length}';
   }
 
   /// FIXED: Builds card display with proper layout for 3 cards

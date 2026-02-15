@@ -8,6 +8,7 @@ import '../widgets/card_selector_dropdown.dart';
 import '../widgets/recall_countdown_timer.dart';
 import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
 import 'results_screen.dart';
+import '../main.dart'; // Import the t() function for localization
 
 class RecallScreen extends StatefulWidget {
   final List<PlayingCard> correctCards;
@@ -99,22 +100,21 @@ class _RecallScreenState extends State<RecallScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Warning'),
-          content: const Text(
-              'You haven\'t selected all cards. '
-                  'Do you still want to finish the recall?'
+          title: Text(t('warning')),
+          content: Text(
+              t('not_all_cards_selected')
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Continue'),
+              child: Text(t('continue')),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(context);
                 _goToResults(wasAutoSubmitted: false);
               },
-              child: const Text('Finish'),
+              child: Text(t('finish')),
             ),
           ],
         ),
@@ -182,7 +182,7 @@ class _RecallScreenState extends State<RecallScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Recall Phase'),
+          title: Text(t('recall_phase')),
           actions: [
             Center(
               child: Padding(
@@ -218,7 +218,7 @@ class _RecallScreenState extends State<RecallScreen> {
                             color: Theme.of(context).colorScheme.primaryContainer,
                           ),
                           child: Text(
-                            'Select the cards in the order you saw them',
+                            t('recall_instructions'),
                             style: TextStyle(
                               fontSize: 16,
                               color: Theme.of(context).colorScheme.onPrimaryContainer,
@@ -244,9 +244,9 @@ class _RecallScreenState extends State<RecallScreen> {
                           child: CustomElevatedButton(
                             height: 56,
                             onPressed: _confirmFinish,
-                            child: const Text(
-                              'Finish Recall',
-                              style: TextStyle(fontSize: 18),
+                            child: Text(
+                              t('finish_recall'),
+                              style: const TextStyle(fontSize: 18),
                             ),
                           ),
                         ),
@@ -302,9 +302,9 @@ class _RecallScreenState extends State<RecallScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Press back again within 5 seconds to exit',
+                              t('press_back_again_to_exit'),
                               style: TextStyle(
-                                color: Colors.orange.shade900,
+                                color: Colors.orange[900]!,
                                 fontWeight: FontWeight.w500,
                                 fontSize: 14,
                               ),

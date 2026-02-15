@@ -6,6 +6,7 @@ import 'single_deck_config_screen.dart';
 import 'multi_deck_config_screen.dart';
 import 'settings_screen.dart'; // ADDED: Import settings screen
 import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
+import '../main.dart'; // Import the t() function for localization
 
 // StatelessWidget because this screen doesn't have any changing state
 class HomeScreen extends StatelessWidget {
@@ -17,14 +18,14 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       // AppBar: the bar at the top of the screen
       appBar: AppBar(
-        title: const Text('Speed Card Trainer'),
+        title: Text(t('speed_card_trainer')),
         centerTitle: true, // Centers the title text
         // ADDED: Settings button in app bar
         actions: [
           // IconButton for settings
           IconButton(
             icon: const Icon(Icons.settings),
-            tooltip: 'Settings', // Shows tooltip on long press
+            tooltip: t('settings'), // Shows tooltip on long press
             onPressed: () {
               // Navigate to settings screen
               Navigator.push(
@@ -66,9 +67,9 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(height: 32),
 
                     // Title text
-                    const Text(
-                      'Choose training mode',
-                      style: TextStyle(
+                    Text(
+                      t('choose_training_mode'),
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
@@ -93,9 +94,9 @@ class HomeScreen extends StatelessWidget {
                       // Icon shown on the left side of the button
                       icon: const Icon(Icons.filter_1, size: 28),
                       // Text shown on the button
-                      label: const Text(
-                        'Single Deck',
-                        style: TextStyle(fontSize: 18),
+                      label: Text(
+                        t('single_deck'),
+                        style: const TextStyle(fontSize: 18),
                       ),
                     ),
 
@@ -113,19 +114,18 @@ class HomeScreen extends StatelessWidget {
                         );
                       },
                       icon: const Icon(Icons.filter_9_plus, size: 28),
-                      label: const Text(
-                        'Multi Deck',
-                        style: TextStyle(fontSize: 18),
+                      label: Text(
+                        t('multi_deck'),
+                        style: const TextStyle(fontSize: 18),
                       ),
                     ),
 
                     const SizedBox(height: 32),
 
                     // Informational text explaining the two modes
-                    const Text(
-                      'Single deck: train memory with 1-52 cards\n'
-                          'Multi deck: increase difficulty with multiple decks',
-                      style: TextStyle(
+                    Text(
+                      t('training_info'),
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Colors.grey,
                       ),

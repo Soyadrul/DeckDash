@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';  // For input formatters
 import 'memorization_screen.dart';  // Import the memorization screen
 import '../widgets/custom_elevated_button.dart'; // NEW: Import custom button widget
+import '../main.dart'; // Import the t() function for localization
 
 // StatefulWidget because this screen has changing state (user selections)
 class SingleDeckConfigScreen extends StatefulWidget {
@@ -94,7 +95,7 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Single Deck Configuration'),
+        title: Text(t('single_deck_configuration')),
       ),
       // SafeArea prevents content from being hidden by system UI
       body: SafeArea(
@@ -108,9 +109,9 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,  // Align children to the left
             children: [
               // Section title
-              const Text(
-                'Choose number of cards',
-                style: TextStyle(
+              Text(
+                t('number_of_cards'),
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -121,8 +122,8 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
               // Card widget provides a material design card with elevation
               Card(
                 child: RadioListTile<bool>(
-                  title: const Text('Full deck (52 cards)'),
-                  subtitle: const Text('Train memory with all cards'),
+                  title: Text(t('full_deck')),
+                  subtitle: Text(t('train_memory_with_all_cards')),
                   value: true,  // Value this radio button represents
                   groupValue: _useFullDeck,  // Current selected value
                   // Called when this radio button is tapped
@@ -140,8 +141,8 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
               // OPTION 2: Custom number of cards
               Card(
                 child: RadioListTile<bool>(
-                  title: const Text('Custom number'),
-                  subtitle: const Text('Choose how many cards to use (1-51)'),
+                  title: Text(t('custom_number')),
+                  subtitle: Text(t('choose_how_many_cards')),
                   value: false,
                   groupValue: _useFullDeck,
                   onChanged: (value) {
@@ -162,8 +163,8 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
                 TextField(
                   controller: _cardCountController,
                   decoration: InputDecoration(
-                    labelText: 'Number of cards',
-                    helperText: 'Enter a number between 1 and 51',
+                    labelText: t('number_of_cards'),
+                    helperText: t('enter_number_between_1_and_51'),
                     errorText: _errorMessage,  // Shows error if not null
                     border: const OutlineInputBorder(),
                     prefixIcon: const Icon(Icons.numbers),
@@ -198,9 +199,9 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
                 child: CustomElevatedButton(
                   height: 56,
                   onPressed: _startSession,
-                  child: const Text(
-                    'Start Training',
-                    style: TextStyle(fontSize: 18),
+                  child: Text(
+                    t('start_memorization'),
+                    style: const TextStyle(fontSize: 18),
                   ),
                 ),
               ),
