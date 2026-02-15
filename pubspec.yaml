@@ -48,6 +48,13 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
+  # For making HTTP requests to GitHub API
+  http: ^1.1.0
+  
+  # For platform-specific functionality
+  url_launcher: ^6.2.1
+  path_provider: ^2.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

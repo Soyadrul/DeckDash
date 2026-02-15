@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import '../models/app_settings.dart';
 import '../main.dart';
+import '../utils/update_checker.dart';
 
 /// SettingsScreen widget - displays all user-configurable settings
 /// Settings are now organized into logical categories for better UX
@@ -181,6 +182,194 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _svgCenterFontSize = fontSize;
     });
     await _settings.setSvgCenterFontSize(fontSize);
+  }
+
+  /// Checks for app updates and prompts user to update if available
+  Future<void> _checkForUpdates() async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: Row(
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(width: 20),
+                Text(t('checking_for_updates')),
+              ],
+            ),
+          );
+        },
+      );
+
+      // Check for updates
+      final updateInfo = await UpdateChecker.checkForUpdate();
+
+      // Close loading dialog
+      Navigator.of(context).pop();
+
+      if (updateInfo != null) {
+        // New version is available
+        _showUpdateDialog(updateInfo);
+      } else {
+        // No updates available
+        _showNoUpdateDialog();
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      Navigator.of(context).pop();
+
+      // Show error dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(t('error')),
+            content: Text(t('error_checking_for_updates')),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text(t('ok')),
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  /// Shows dialog when a new update is available
+  void _showUpdateDialog(UpdateInfo updateInfo) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(t('update_available')),
+          content: SizedBox(
+            width: double.maxFinite, // Allow full width for changelog
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${t('current_version')}: ${updateInfo.currentVersion}\n${t('latest_version')}: ${updateInfo.latestVersion}',
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  t('changelog'),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 5),
+                Flexible(
+                  child: Container(
+                    height: 200,
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Scrollbar(
+                      child: SingleChildScrollView(
+                        child: Text(
+                          updateInfo.releaseNotes.isNotEmpty 
+                            ? updateInfo.releaseNotes 
+                            : t('no_changelog_available'),
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  t('update_description'),
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(t('later')),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _downloadAndInstallUpdate(updateInfo);
+              },
+              child: Text(t('update_now')),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Shows dialog when no updates are available
+  void _showNoUpdateDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(t('no_update_available')),
+          content: Text(t('running_latest_version')),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(t('ok')),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Downloads and installs the update
+  void _downloadAndInstallUpdate(UpdateInfo updateInfo) {
+    // For now, we'll just open the GitHub releases page in a browser
+    // In a real implementation, you would handle downloading and installing the APK
+    _showDownloadInstructions(updateInfo);
+  }
+
+  /// Shows instructions for downloading the update
+  void _showDownloadInstructions(UpdateInfo updateInfo) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(t('download_update')),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(t('download_instructions')),
+              const SizedBox(height: 10),
+              SelectableText(
+                updateInfo.downloadUrl,
+                style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(t('ok')),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -611,6 +800,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(
               t('app_description'),
               style: const TextStyle(color: Colors.grey),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: _checkForUpdates,
+              icon: Icon(Icons.update, size: 18),
+              label: Text(t('check_for_updates')),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
             ),
           ],
         ),
