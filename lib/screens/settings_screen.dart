@@ -112,22 +112,58 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Updates the language setting
   Future<void> _updateLanguage(String languageCode) async {
-    setState(() {
-      _selectedLanguage = languageCode;
-    });
-    await _settings.setLanguageCode(languageCode);
+    // Show confirmation dialog before changing language
+    bool confirmChange = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(t('language')),
+          content: Text(t('note_language_restart')),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Cancel
+              },
+              child: Text(t('cancel')),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Confirm
+              },
+              child: Text(t('ok')),
+            ),
+          ],
+        );
+      },
+    ) ?? false; // Default to false if dialog is dismissed
 
-    if (mounted) {
-      // Update the app's locale and trigger a rebuild
-      MyApp.of(context)?.updateLocale(languageCode);
-      MyApp.of(context)?.updateTheme(); // This forces a rebuild of the entire app
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(t('language_changed_successfully')),
-          duration: Duration(seconds: 2),
-        ),
-      );
+    if (confirmChange) {
+      setState(() {
+        _selectedLanguage = languageCode;
+      });
+      await _settings.setLanguageCode(languageCode);
+
+      if (mounted) {
+        // Update the app's locale and trigger a rebuild
+        MyApp.of(context)?.updateLocale(languageCode);
+        MyApp.of(context)?.updateTheme(); // This forces a rebuild of the entire app
+
+        // Show snackbar with success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(t('language_changed_successfully')),
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        // Force a complete app restart to ensure all screens update to the new language
+        // Using a delayed future to allow the snackbar to show before restarting
+        Future.delayed(Duration(milliseconds: 500), () {
+          if (mounted) {
+            MyApp.of(context)?.forceRestart();
+          }
+        });
+      }
     }
   }
 

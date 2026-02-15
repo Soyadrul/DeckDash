@@ -151,6 +151,8 @@ class AppLocalizations {
       'king': 'King',
       'select': 'Select',
       'language_changed_successfully': 'Language changed successfully!',
+      'cancel': 'Cancel',
+      'ok': 'OK',
     },
     'it': {
       // Home Screen
@@ -303,6 +305,8 @@ class AppLocalizations {
       'king': 'Re',
       'select': 'Seleziona',
       'language_changed_successfully': 'Lingua cambiata con successo!',
+      'cancel': 'Annulla',
+      'ok': 'OK',
     },
   };
 

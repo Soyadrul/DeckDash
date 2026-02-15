@@ -38,6 +38,8 @@ class _MyAppState extends State<MyApp> {
   // Get reference to settings singleton
   final AppSettings _settings = AppSettings();
   Locale? _locale;
+  // Key to force complete rebuild when locale changes
+  GlobalKey _navigatorKey = GlobalKey();
 
   @override
   void initState() {
@@ -52,7 +54,7 @@ class _MyAppState extends State<MyApp> {
       _locale = Locale(languageCode);
     });
   }
-  
+
   /// Called by settings screen to refresh theme and language
   /// This rebuilds the entire app with new theme and language settings
   void updateTheme() {
@@ -61,13 +63,21 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  /// Force a complete app restart by changing the navigator key
+  void forceRestart() {
+    setState(() {
+      _navigatorKey = GlobalKey();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // MaterialApp provides Material Design styling and navigation
     return MaterialApp(
+      key: _navigatorKey, // Key to force complete rebuild when changed
       // The title shown in the app switcher on mobile devices
       title: 'DeckDash',
-      
+
       locale: _locale,
       supportedLocales: [
         Locale('en'), // English
