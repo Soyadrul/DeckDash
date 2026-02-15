@@ -42,7 +42,7 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
     // Check if input is not a number
     if (number == null) {
       setState(() {
-        _errorMessage = 'Please enter a valid number';
+        _errorMessage = t('please_enter_valid_number');
       });
       return false;
     }
@@ -50,7 +50,7 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
     // Minimum 2 decks required for multi-deck mode
     if (number < 2) {
       setState(() {
-        _errorMessage = 'Number of decks must be at least 2';
+        _errorMessage = t('number_of_decks_must_be_at_least_2');
       });
       return false;
     }
@@ -58,7 +58,7 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
     // Reasonable maximum to avoid memory issues
     if (number > 10) {
       setState(() {
-        _errorMessage = 'Maximum 10 decks per session';
+        _errorMessage = t('maximum_10_decks_per_session');
       });
       return false;
     }
@@ -211,10 +211,10 @@ class _MultiDeckConfigScreenState extends State<MultiDeckConfigScreen> {
                       child: Text(
                         // Calculate and display total cards
                         '${t('total_cards')}: ${(int.tryParse(_deckCountController.text) ?? 2) * 52}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Colors.black54,
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
                         ),
                       ),
                     ),

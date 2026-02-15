@@ -76,7 +76,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       key: _navigatorKey, // Key to force complete rebuild when changed
       // The title shown in the app switcher on mobile devices
-      title: 'DeckDash',
+      title: t('app_name'),
 
       locale: _locale,
       supportedLocales: [

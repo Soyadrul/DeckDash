@@ -153,6 +153,10 @@ class AppLocalizations {
       'language_changed_successfully': 'Language changed successfully!',
       'cancel': 'Cancel',
       'ok': 'OK',
+      'please_enter_valid_number': 'Please enter a valid number',
+      'number_must_be_between_1_and_51': 'Number must be between 1 and 51',
+      'number_of_decks_must_be_at_least_2': 'Number of decks must be at least 2',
+      'maximum_10_decks_per_session': 'Maximum 10 decks per session',
     },
     'it': {
       // Home Screen
@@ -307,6 +311,10 @@ class AppLocalizations {
       'language_changed_successfully': 'Lingua cambiata con successo!',
       'cancel': 'Annulla',
       'ok': 'OK',
+      'please_enter_valid_number': 'Per favore inserisci un numero valido',
+      'number_must_be_between_1_and_51': 'Il numero deve essere compreso tra 1 e 51',
+      'number_of_decks_must_be_at_least_2': 'Il numero di mazzi deve essere almeno 2',
+      'maximum_10_decks_per_session': 'Massimo 10 mazzi per sessione',
     },
   };
 

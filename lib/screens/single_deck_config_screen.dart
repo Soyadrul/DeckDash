@@ -51,7 +51,7 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
     // Check if input is not a valid number
     if (number == null) {
       setState(() {
-        _errorMessage = 'Please enter a valid number';
+        _errorMessage = t('please_enter_valid_number');
       });
       return false;
     }
@@ -59,7 +59,7 @@ class _SingleDeckConfigScreenState extends State<SingleDeckConfigScreen> {
     // Check if number is outside valid range (1-51)
     if (number < 1 || number > 51) {
       setState(() {
-        _errorMessage = 'Number must be between 1 and 51';
+        _errorMessage = t('number_must_be_between_1_and_51');
       });
       return false;
     }
